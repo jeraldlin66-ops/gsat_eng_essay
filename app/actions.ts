@@ -1,5 +1,5 @@
 'use server';
-
+console.log("GROQ KEY Loaded:", process.env.GROQ_API_KEY ? "YES" : "NO");
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
