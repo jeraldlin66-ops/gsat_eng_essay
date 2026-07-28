@@ -1,16 +1,16 @@
 'use server';
-console.log("GROQ KEY Loaded:", process.env.GROQ_API_KEY ? "YES" : "NO");
+console.log("GROQ KEY Loaded:", process.env.GROQ_API_KEY2 ? "YES" : "NO");
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
 const groq = createOpenAI({
   baseURL: 'https://api.groq.com/openai/v1',
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY2,
 });
 
 export async function generateEssayHelp(topic: string, type: string) {
-  if (!process.env.GROQ_API_KEY) {
-    return '⚠️ 尚未檢測到 GROQ_API_KEY。請先在 .env.local 或 Vercel 設定環境變數。';
+  if (!process.env.GROQ_API_KEY2) {
+    return '⚠️ 尚未檢測到 GROQ_API_KEY2。請先在 .env.local 或 Vercel 設定環境變數。';
   }
 
   try {
