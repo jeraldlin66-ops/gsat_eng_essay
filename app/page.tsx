@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { generateEssayHelp } from './actions';
 
-type TabType = 'picture' | 'chart' | 'essay';
+type TabType = 'picture' | 'chart' | 'essay' | 'correction';
 
 const TAB_CONFIG: Record<TabType, { label: string; placeholder: string; examples: string[] }> = {
   picture: {
@@ -30,25 +30,39 @@ const TAB_CONFIG: Record<TabType, { label: string; placeholder: string; examples
       '面對失敗與挫折時，你認為最重要的心態是什麼？',
     ],
   },
+  correction: {
+    label: '作文批改',
+    placeholder: '請輸入作文題目描述...',
+    examples: [
+      '題目：討論高中生是否應該攜帶手機到校。',
+    ],
+  },
 };
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('picture');
   const [topic, setTopic] = useState('');
+  const [userEssay, setUserEssay] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [copied, setCopied] = useState(false);
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
+    if (activeTab === 'correction' && !userEssay.trim()) return;
+
     setLoading(true);
     setResult('');
 
     try {
-      const res = await generateEssayHelp(topic, TAB_CONFIG[activeTab].label);
+      const res = await generateEssayHelp(
+        topic,
+        TAB_CONFIG[activeTab].label,
+        activeTab === 'correction' ? userEssay : undefined
+      );
       setResult(res);
     } catch (err) {
-      setResult('生成失敗，請確認伺服器與 API Key 設定。');
+      setResult('生成失敗，請確認伺服器設定。');
     } finally {
       setLoading(false);
     }
@@ -62,24 +76,24 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-12 selection:bg-indigo-500 selection:text-white">
+    <main className="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-12 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header Section */}
-        <header className="space-y-3 text-center md:text-left border-b border-slate-800/80 pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold tracking-wide uppercase">
-            GSAT Writing Assistant
+        <header className="space-y-3 text-center md:text-left border-b border-slate-200 pb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold tracking-wide uppercase">
+            GSAT English Writing Mentor
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-50">
-            學測英文作文靈感導師
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+            學測英文作文 AI 靈感與批改導師
           </h1>
-          <p className="text-slate-400 text-sm md:text-base max-w-2xl leading-relaxed">
-            針對看圖寫作、圖表分析與主題論述，即時剖析破題立意、段落架構與高分詞彙。
+          <p className="text-slate-600 text-sm md:text-base max-w-2xl leading-relaxed">
+            提供全方位寫作支援：看圖寫作、圖表分析、主題論述靈感發想，以及全文 AI 精準批改與評分。
           </p>
         </header>
 
         {/* Tab Navigation */}
-        <div className="flex p-1 bg-slate-900/90 rounded-xl border border-slate-800">
+        <div className="flex p-1.5 bg-slate-200/70 rounded-xl border border-slate-300/60">
           {(Object.keys(TAB_CONFIG) as TabType[]).map((tabKey) => {
             const isActive = activeTab === tabKey;
             return (
@@ -88,11 +102,13 @@ export default function Home() {
                 onClick={() => {
                   setActiveTab(tabKey);
                   setTopic('');
+                  setUserEssay('');
+                  setResult('');
                 }}
-                className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/50'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    ? 'bg-white text-indigo-600 shadow-sm border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
                 }`}
               >
                 {TAB_CONFIG[tabKey].label}
@@ -102,40 +118,51 @@ export default function Home() {
         </div>
 
         {/* Input & Action Area */}
-        <div className="space-y-4 bg-slate-900/40 p-6 rounded-2xl border border-slate-800/80">
-          <div className="flex justify-between items-center text-sm font-medium text-slate-300">
-            <label htmlFor="topic-input">題目或情境敘述</label>
-            <span className="text-xs text-slate-500">{topic.length} 字</span>
-          </div>
-
-          <div className="relative">
+        <div className="space-y-5 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+          
+          {/* 題目輸入框 */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm font-semibold text-slate-700">
+              <label htmlFor="topic-input">1. 作文題目 / 情境描述</label>
+              <span className="text-xs text-slate-400 font-normal">{topic.length} 字</span>
+            </div>
             <textarea
               id="topic-input"
-              rows={4}
+              rows={activeTab === 'correction' ? 2 : 4}
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder={TAB_CONFIG[activeTab].placeholder}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-sm transition-all resize-none leading-relaxed"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-sm transition-all resize-none leading-relaxed"
             />
-            {topic && (
-              <button
-                onClick={() => setTopic('')}
-                className="absolute top-3 right-3 text-xs text-slate-500 hover:text-slate-300 bg-slate-900 px-2 py-1 rounded border border-slate-800 transition"
-              >
-                清空
-              </button>
-            )}
           </div>
 
-          {/* Quick Prompts */}
+          {/* 批改專用：英文文章輸入框 */}
+          {activeTab === 'correction' && (
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-between items-center text-sm font-semibold text-slate-700">
+                <label htmlFor="essay-input">2. 貼上你的英文作文全文</label>
+                <span className="text-xs text-slate-400 font-normal">{userEssay.length} 字</span>
+              </div>
+              <textarea
+                id="essay-input"
+                rows={8}
+                value={userEssay}
+                onChange={(e) => setUserEssay(e.target.value)}
+                placeholder="Please paste your full English essay here..."
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-sm transition-all resize-none leading-relaxed font-mono"
+              />
+            </div>
+          )}
+
+          {/* 快速試用範例 */}
           <div className="space-y-2">
-            <span className="text-xs text-slate-500 block">快速試用範例：</span>
+            <span className="text-xs font-medium text-slate-400 block">快速試用範例：</span>
             <div className="flex flex-wrap gap-2">
               {TAB_CONFIG[activeTab].examples.map((ex, idx) => (
                 <button
                   key={idx}
                   onClick={() => setTopic(ex)}
-                  className="text-xs text-slate-400 hover:text-indigo-300 bg-slate-900 hover:bg-slate-800 border border-slate-800/80 px-3 py-1.5 rounded-lg transition text-left truncate max-w-xs"
+                  className="text-xs text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-slate-200 px-3 py-1.5 rounded-lg transition text-left truncate max-w-xs"
                 >
                   {ex}
                 </button>
@@ -143,11 +170,11 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* 提交按鈕 */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !topic.trim()}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-900 disabled:text-slate-600 font-semibold rounded-xl text-slate-50 text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 active:scale-[0.99]"
+            disabled={loading || !topic.trim() || (activeTab === 'correction' && !userEssay.trim())}
+            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 font-semibold rounded-xl text-white text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 active:scale-[0.99]"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -155,39 +182,43 @@ export default function Home() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                正在解析題目並生成寫作建議...
+                {activeTab === 'correction' ? '正在細心批改與計算分數...' : '正在分析題目並生成寫作建議...'}
               </span>
+            ) : activeTab === 'correction' ? (
+              '開始精細批改作文'
             ) : (
-              '分析題目並生成建議'
+              '生成寫作指導與建議'
             )}
           </button>
         </div>
 
-        {/* Loading State (Skeleton) */}
+        {/* Loading Skeleton */}
         {loading && (
-          <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-4 animate-pulse">
-            <div className="h-5 bg-slate-800 rounded w-1/4"></div>
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4 animate-pulse">
+            <div className="h-5 bg-slate-200 rounded w-1/4"></div>
             <div className="space-y-2">
-              <div className="h-4 bg-slate-800/60 rounded w-full"></div>
-              <div className="h-4 bg-slate-800/60 rounded w-5/6"></div>
-              <div className="h-4 bg-slate-800/60 rounded w-4/6"></div>
+              <div className="h-4 bg-slate-100 rounded w-full"></div>
+              <div className="h-4 bg-slate-100 rounded w-5/6"></div>
+              <div className="h-4 bg-slate-100 rounded w-4/6"></div>
             </div>
           </div>
         )}
 
-        {/* Result Area */}
+        {/* 結果展示區 */}
         {result && !loading && (
-          <div className="p-6 bg-slate-900/60 border border-slate-800/90 rounded-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h2 className="text-base font-semibold text-indigo-400">寫作指導與建議內容</h2>
+          <div className="p-6 md:p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <h2 className="text-base font-bold text-indigo-900">
+                {activeTab === 'correction' ? '作文批改與分析報告' : '寫作指導與建議內容'}
+              </h2>
               <button
                 onClick={handleCopy}
-                className="text-xs px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 border border-slate-700/50"
+                className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition flex items-center gap-1.5 border border-slate-200"
               >
-                {copied ? '已複製到剪貼簿' : '複製內容'}
+                {copied ? '已複製內容' : '複製建議'}
               </button>
             </div>
-            <div className="whitespace-pre-wrap text-slate-300 text-sm leading-relaxed tracking-wide font-sans">
+            <div className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed tracking-wide font-sans">
               {result}
             </div>
           </div>
