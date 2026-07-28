@@ -10,7 +10,7 @@ type TargetScore = 'under10' | '11to15' | '16to20';
 const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string; examples: string[] }> = {
   picture: {
     label: '看圖寫作',
-    placeholder: '描述四格漫畫或圖片的情境細節...',
+    placeholder: '可直接上傳四格漫畫圖片/PDF，或輸入文字描述...',
     examples: [
       '第一張圖主角在排隊買限量商品，第二張圖突然有人插隊...',
       '第一張圖大家在公園野餐，第二張圖突然下大雨...',
@@ -18,7 +18,7 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
   },
   chart: {
     label: '圖表分析',
-    placeholder: '描述圖表主題、數據趨勢與主要對比...',
+    placeholder: '可直接上傳圖表圖片/PDF，或輸入數據趨勢...',
     examples: [
       '描述 2010 年至 2020 年台灣青少年使用社群媒體的時間變化...',
       '比較高中生選擇打工與參加社團的比例變化...',
@@ -26,7 +26,7 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
   },
   essay: {
     label: '主題論述',
-    placeholder: '輸入作文題目或欲討論的核心話題...',
+    placeholder: '輸入作文題目、貼上題目卷 PDF，或描述核心話題...',
     examples: [
       '討論高中生是否應該被禁止攜帶智慧型手機到學校...',
       '面對失敗與挫折時，你認為最重要的心態是什麼？',
@@ -34,7 +34,7 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
   },
   vocab: {
     label: '單字片語發想',
-    placeholder: '輸入你想寫的主題（例：AI科技、氣候變遷、心理健康...）',
+    placeholder: '輸入你想寫的主題或上傳文章題目...',
     examples: [
       '關於「人工智慧對未來工作影響」的高級單字片語與俗諺',
       '關於「現代人焦慮與心理健康」的高分描寫詞彙與金句',
@@ -55,7 +55,9 @@ export default function Home() {
   
   const [topic, setTopic] = useState('');
   const [userEssay, setUserEssay] = useState('');
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // 檔案狀態 (圖片 / PDF)
+  const [fileData, setFileData] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   // 引導結果
@@ -75,20 +77,26 @@ export default function Home() {
 
   const [copied, setCopied] = useState(false);
 
-  // 圖片上傳處理
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 檔案上傳處理 (圖片 & PDF)
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setFileData({
+          base64: reader.result as string,
+          mimeType: file.type,
+          name: file.name,
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleGenerate = async () => {
-    if (!topic.trim()) return;
+    // 條件：必須有 (題目文字 OR 檔案)，且批改模式下必須有 userEssay
+    const hasPromptSource = topic.trim().length > 0 || fileData !== null;
+    if (!hasPromptSource) return;
     if (mainMode === 'correction' && !userEssay.trim()) return;
 
     setLoading(true);
@@ -97,7 +105,9 @@ export default function Home() {
 
     try {
       const subTypeName = mainMode === 'guidance' ? GUIDANCE_CONFIG[guidanceType].label : '作文批改';
-      const res = await generateEssayHelp(mainMode, subTypeName, targetScore, topic, userEssay);
+      const filePayload = fileData ? { base64: fileData.base64, mimeType: fileData.mimeType } : undefined;
+
+      const res = await generateEssayHelp(mainMode, subTypeName, targetScore, topic, userEssay, filePayload);
 
       if (res.error) {
         alert(res.error);
@@ -120,6 +130,12 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // 能否提交按鈕的判斷邏輯
+  const isButtonDisabled =
+    loading ||
+    (!topic.trim() && !fileData) ||
+    (mainMode === 'correction' && !userEssay.trim());
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-12 font-sans selection:bg-emerald-100 selection:text-emerald-900">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -133,7 +149,7 @@ export default function Home() {
             學測英文作文 AI 導師
           </h1>
           <p className="text-slate-600 text-sm md:text-base max-w-2xl leading-relaxed">
-            分層級靈感引導與大考中心（CEEC）標準精準批改，全方位帶領你向高分邁進。
+            支援圖片與 PDF 題目卷深度解析、分層級靈感引導與大考中心（CEEC）標準精準批改。
           </p>
         </header>
 
@@ -227,37 +243,47 @@ export default function Home() {
         {/* 輸入區塊 */}
         <div className="space-y-5 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
           
-          {/* 圖片上傳區（引導區特有） */}
-          {mainMode === 'guidance' && (
-            <div className="space-y-2 pb-2">
-              <label className="text-sm font-semibold text-slate-700 block">
-                上傳題目圖片 / 看圖題目（選填）
+          {/* 📎 圖片 / PDF 檔案上傳區 */}
+          <div className="space-y-2 pb-2">
+            <label className="text-sm font-semibold text-slate-700 block">
+              上傳題目圖片或 PDF 題目卷（上傳後可不填文字）
+            </label>
+            <div className="flex items-center gap-4">
+              <label className="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                <span>📎 選擇檔案 (JPG, PNG, PDF)</span>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </label>
-              <div className="flex items-center gap-4">
-                <label className="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition">
-                  選擇圖片檔案
-                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                </label>
-                {imagePreview && (
-                  <div className="relative group">
-                    <img src={imagePreview} alt="Uploaded Preview" className="h-16 w-16 object-cover rounded-lg border" />
-                    <button
-                      onClick={() => setImagePreview(null)}
-                      className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-              </div>
+
+              {/* 檔案預覽/標示 */}
+              {fileData && (
+                <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs text-emerald-800">
+                  {fileData.mimeType.includes('image') ? (
+                    <img src={fileData.base64} alt="Preview" className="h-8 w-8 object-cover rounded border" />
+                  ) : (
+                    <span className="font-bold">📄 PDF</span>
+                  )}
+                  <span className="truncate max-w-[150px]">{fileData.name}</span>
+                  <button
+                    onClick={() => setFileData(null)}
+                    className="ml-1 text-rose-500 font-bold hover:text-rose-700"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* 題目欄位 */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm font-semibold text-slate-700">
               <label htmlFor="topic-input">
-                {mainMode === 'guidance' ? '作文題目 / 欲發想的情境描述' : '1. 作文題目描述'}
+                {mainMode === 'guidance' ? '作文題目 / 欲發想的情境描述（可選填）' : '1. 作文題目描述（若已上傳檔案可選填）'}
               </label>
               <span className="text-xs text-slate-400 font-normal">{topic.length} 字</span>
             </div>
@@ -267,9 +293,9 @@ export default function Home() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder={
-                mainMode === 'guidance'
-                  ? GUIDANCE_CONFIG[guidanceType].placeholder
-                  : '請輸入作文題目描述或提示...'
+                fileData
+                  ? '已上傳檔案，AI 將自動辨識內容；如有補充說明可寫在此處...'
+                  : GUIDANCE_CONFIG[guidanceType].placeholder
               }
               className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm transition-all resize-none leading-relaxed"
             />
@@ -294,7 +320,7 @@ export default function Home() {
           )}
 
           {/* 試用範例 */}
-          {mainMode === 'guidance' && (
+          {mainMode === 'guidance' && !fileData && (
             <div className="space-y-2">
               <span className="text-xs font-medium text-slate-400 block">快速點擊試用：</span>
               <div className="flex flex-wrap gap-2">
@@ -311,10 +337,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* 淺綠色生成按鈕 */}
+          {/* 生成按鈕 */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !topic.trim() || (mainMode === 'correction' && !userEssay.trim())}
+            disabled={isButtonDisabled}
             className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 font-bold rounded-xl text-white text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20 active:scale-[0.99]"
           >
             {loading ? (
@@ -323,7 +349,7 @@ export default function Home() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                {mainMode === 'correction' ? '大考標準比對與精細批改中...' : '生成靈感與寫作引導中...'}
+                {mainMode === 'correction' ? '圖片/PDF 精細解析與作文批改中...' : '圖片/PDF 深度閱讀與靈感生成中...'}
               </span>
             ) : mainMode === 'correction' ? (
               '進行大考標準精細批改'
@@ -345,7 +371,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* 💡 靈感引導結果展示區（不同顏色匡匡區分小標題） */}
+        {/* 💡 靈感引導結果展示區 */}
         {guidanceResult && !loading && (
           <div className="space-y-6">
             
@@ -412,14 +438,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* 📝 作文批改結果展示區 (大字體分數 + 綠框 / 紅框 / 深綠框) */}
+        {/* 📝 作文批改結果展示區 */}
         {correctionResult && !loading && (
           <div className="space-y-6">
-            
-            {/* 🟢 總評區塊 (綠框，頂部大字體預估分數) */}
             <div className="p-6 md:p-8 bg-emerald-50/50 border-2 border-emerald-500 rounded-2xl shadow-sm space-y-4">
-              
-              {/* 大字體分數區 */}
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-emerald-200 pb-4 gap-2">
                 <div>
                   <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
@@ -442,7 +464,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 🔴 文法用語錯誤對照 (紅框) */}
             {correctionResult.errors && (
               <div className="p-6 md:p-8 bg-rose-50/50 border-2 border-rose-500 rounded-2xl shadow-sm space-y-3">
                 <div className="flex justify-between items-center border-b border-rose-200 pb-3">
@@ -462,7 +483,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* 🌲 適合範文 (深綠框) */}
             {correctionResult.modelEssay && (
               <div className="p-6 md:p-8 bg-emerald-950/5 border-2 border-emerald-800 rounded-2xl shadow-sm space-y-3">
                 <div className="flex justify-between items-center border-b border-emerald-800/20 pb-3">
@@ -481,7 +501,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-
           </div>
         )}
 

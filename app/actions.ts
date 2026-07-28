@@ -6,20 +6,33 @@ import { generateText } from 'ai';
 export async function generateEssayHelp(
   mode: 'guidance' | 'correction',
   subType: string,
-  targetScore: string, // 僅 guidance 模式使用
+  targetScore: string,
   topic: string,
-  userEssay?: string
+  userEssay?: string,
+  fileData?: { base64: string; mimeType: string } // 支援圖片與 PDF base64 傳輸
 ) {
+  // 建議使用支援強大視覺與 PDF 解析的模型 (如 Gemini 2.5 或 OpenAI GPT-4o)
   const apiKey = process.env.GROQ_API_KEY2 || process.env.GROQ_API_KEY;
 
   if (!apiKey) {
-    return { error: '⚠️ 尚未檢測到 API Key。請先在 .env.local 或 Vercel 設定 GROQ_API_KEY2。' };
+    return { error: '⚠️ 尚未檢測到 API Key。' };
   }
 
   const groq = createOpenAI({
     baseURL: 'https://api.groq.com/openai/v1',
     apiKey: apiKey,
   });
+
+  // 構建視覺/文件解析提示詞
+  let visionPromptIntro = '';
+  if (fileData) {
+    visionPromptIntro = `【重要視覺與文件解析指令】：
+使用者上傳了題目圖片/PDF 文件。請務必非常仔細地讀取檔案中的所有內容：
+1. 若包含印刷體或手寫文字（例如學測題目描述、引導文字、提示語），請精準辨識並完全理解其要求。
+2. 若為四格漫畫或圖片，請依序仔細觀察每一格圖畫中的主角、動作、表情、環境細節與故事轉折。
+3. 若為圖表，請仔細讀取圖表標題、X/Y 軸標籤、數據趨勢與主要比較點。
+即使使用者沒有額外輸入文字描述，也請完全以檔案內容為準進行分析。\n\n`;
+  }
 
   if (mode === 'guidance') {
     const scoreMap: Record<string, string> = {
@@ -29,11 +42,8 @@ export async function generateEssayHelp(
     };
     const targetDescription = scoreMap[targetScore] || scoreMap['11to15'];
 
-    // 單字片語發想模式：不提供段落大綱，專注於詞彙、片語、諺語
     if (subType === '單字片語發想') {
-      const prompt = `你是一位台灣學測英文作文專家。請針對主題【${topic}】，目標設定為【${targetDescription}】，提供豐富的寫作素材補給包：
-
-請務必嚴格按照以下標籤格式輸出：
+      const prompt = `${visionPromptIntro}你是一位台灣學測英文作文專家。請針對題目內容（包含檔案與文字描述【${topic || '詳見上傳檔案'}】），目標設定為【${targetDescription}】，提供寫作素材補給包：
 
 ===GUIDANCE_VOCAB===
 (請提供以下內容：
@@ -61,15 +71,10 @@ export async function generateEssayHelp(
         return { error: '生成失敗，請確認 API Key 是否正確。' };
       }
     } else {
-      // 一般引導模式：結構化分為主題立意、段落大綱、單字片語
-      const prompt = `你是一位台灣學測英文作文專家。請針對【${subType}】題目/情境，目標設定為【${targetDescription}】，提供客製化的寫作指導：
-
-題目/情境描述：${topic}
-
-請務必嚴格按照以下三大標籤格式輸出內容（不要改動標籤名稱）：
+      const prompt = `${visionPromptIntro}你是一位台灣學測英文作文專家。請仔細讀取上傳檔案與文字描述【${topic || '詳見上傳檔案'}】，目標設定為【${targetDescription}】，提供客製化寫作指導：
 
 ===GUIDANCE_THEME===
-(在這裡填寫【核心主題與破題立意建議】：如何破題、立意切入點與發想方向)
+(在這裡填寫【核心主題與破題立意建議】：仔細分析圖片/PDF中的細節與文字，提出精準的破題切入點與發想方向)
 
 ===GUIDANCE_OUTLINE===
 (在這裡填寫【第一段與第二段段落大綱與必備句型】：
@@ -106,16 +111,14 @@ export async function generateEssayHelp(
       }
     }
   } else {
-    // 批改模式：無需設定分數區間，直接給出大字體得分與三大評分色框
-    const prompt = `你是一位嚴謹的台灣大考中心（CEEC）學測英文作文閱卷老師。請依據「大考中心學測英文作文評分標準」對學生的作文進行深度批改。
+    // 批改模式
+    const prompt = `${visionPromptIntro}你是一位嚴謹的台灣大考中心（CEEC）學測英文作文閱卷老師。請依據「大考中心學測英文作文評分標準」對學生的作文進行深度批改。
 
-【題目 / 情境】：
-${topic}
+【題目 / 情境描述或上傳檔案】：
+${topic || '請參閱上傳之圖片/PDF 題目卷'}
 
 【學生作文內容】：
 ${userEssay}
-
-請務必嚴格按照以下三大標籤格式輸出內容（不要改動標籤名稱）：
 
 ===SECTION_SUMMARY===
 SCORE: [請在這裡只寫數字/20，例如：14/20]
@@ -149,7 +152,6 @@ SCORE: [請在這裡只寫數字/20，例如：14/20]
       let rawSummary = summaryMatch ? summaryMatch[1].trim() : text;
       let scoreText = '';
       
-      // 擷取 SCORE: 行
       const scoreLine = rawSummary.match(/SCORE:\s*(\d+\s*\/\s*20)/i);
       if (scoreLine) {
         scoreText = scoreLine[1];
