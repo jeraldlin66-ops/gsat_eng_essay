@@ -9,23 +9,23 @@ type TargetScore = 'under10' | '11to15' | '16to20';
 
 const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string; examples: string[] }> = {
   picture: {
-    label: '看圖寫作',
-    placeholder: '可直接上傳四格漫畫圖片/PDF，或輸入文字描述...',
+    label: '看圖寫作 (Picture Writing)',
+    placeholder: '可直接上傳四格漫畫圖片/PDF 題目卷，或在此輸入文字描述...',
     examples: [
       '第一張圖主角在排隊買限量商品，第二張圖突然有人插隊...',
       '第一張圖大家在公園野餐，第二張圖突然下大雨...',
     ],
   },
   chart: {
-    label: '圖表分析',
-    placeholder: '可直接上傳圖表圖片/PDF，或輸入數據趨勢...',
+    label: '圖表分析 (Data & Charts)',
+    placeholder: '可上傳圖表圖片/PDF，或描述圖表趨勢與數據對比...',
     examples: [
       '描述 2010 年至 2020 年台灣青少年使用社群媒體的時間變化...',
       '比較高中生選擇打工與參加社團的比例變化...',
     ],
   },
   essay: {
-    label: '主題論述',
+    label: '主題論述 (Argumentative)',
     placeholder: '輸入作文題目、貼上題目卷 PDF，或描述核心話題...',
     examples: [
       '討論高中生是否應該被禁止攜帶智慧型手機到學校...',
@@ -33,19 +33,19 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
     ],
   },
   vocab: {
-    label: '單字片語發想',
-    placeholder: '輸入你想寫的主題或上傳文章題目...',
+    label: '單字片語發想 (Lexical Resource)',
+    placeholder: '輸入主題關鍵字（如：AI科技、氣候變遷、心理健康）...',
     examples: [
-      '關於「人工智慧對未來工作影響」的高級單字片語與俗諺',
+      '關於「人工智慧對未來工作影響」的高階單字片語與俗諺',
       '關於「現代人焦慮與心理健康」的高分描寫詞彙與金句',
     ],
   },
 };
 
 const SCORE_OPTIONS: { id: TargetScore; label: string; desc: string }[] = [
-  { id: 'under10', label: '10 分以下', desc: '基礎打底 · 通順句構與常用詞彙' },
-  { id: '11to15', label: '11 ~ 15 分', desc: '進階提升 · 轉折句型與段落銜接' },
-  { id: '16to20', label: '16 ~ 20 分', desc: '高分頂尖 · 頂級修辭與深層立意' },
+  { id: 'under10', label: '10 分以下 (Foundation)', desc: '基礎打底 · 通順句構與核心詞彙' },
+  { id: '11to15', label: '11 ~ 15 分 (Competent)', desc: '進階提升 · 轉折句型與段落銜接' },
+  { id: '16to20', label: '16 ~ 20 分 (Advanced)', desc: '高分頂尖 · 頂級修辭與深層立意' },
 ];
 
 export default function Home() {
@@ -56,18 +56,15 @@ export default function Home() {
   const [topic, setTopic] = useState('');
   const [userEssay, setUserEssay] = useState('');
   
-  // 檔案狀態 (圖片 / PDF)
   const [fileData, setFileData] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 引導結果
   const [guidanceResult, setGuidanceResult] = useState<{
     theme: string;
     outline: string;
     vocab: string;
   } | null>(null);
 
-  // 批改結果
   const [correctionResult, setCorrectionResult] = useState<{
     score: string;
     summary: string;
@@ -75,9 +72,8 @@ export default function Home() {
     modelEssay: string;
   } | null>(null);
 
-  const [copied, setCopied] = useState(false);
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
-  // 檔案上傳處理 (圖片 & PDF)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -94,7 +90,6 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
-    // 條件：必須有 (題目文字 OR 檔案)，且批改模式下必須有 userEssay
     const hasPromptSource = topic.trim().length > 0 || fileData !== null;
     if (!hasPromptSource) return;
     if (mainMode === 'correction' && !userEssay.trim()) return;
@@ -117,57 +112,82 @@ export default function Home() {
         setCorrectionResult(res.correctionResult);
       }
     } catch (err) {
-      alert('生成失敗，請確認伺服器設定。');
+      alert('系統連線異常，請稍後再試。');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCopy = (text: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = (text: string, sectionId: string) => {
+    // 移除 HTML 標籤後複製純文字
+    const cleanText = text.replace(/<[^>]*>/g, '');
+    navigator.clipboard.writeText(cleanText);
+    setCopiedSection(sectionId);
+    setTimeout(() => setCopiedSection(null), 2000);
   };
 
-  // 能否提交按鈕的判斷邏輯
   const isButtonDisabled =
     loading ||
     (!topic.trim() && !fileData) ||
     (mainMode === 'correction' && !userEssay.trim());
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-12 font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      <div className="max-w-4xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <header className="space-y-3 text-center md:text-left border-b border-slate-200 pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold tracking-wide uppercase">
-            GSAT Writing Hub
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
+      
+      {/* 🏛️ ETS 風格頂部 Header */}
+      <header className="bg-[#0A2540] text-white border-b border-slate-800 shadow-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-400 text-[#0A2540] font-black text-xl px-2.5 py-0.5 rounded tracking-wider">
+              GSAT
+            </div>
+            <div>
+              <span className="font-bold text-lg tracking-tight block leading-none">
+                Writing Assessment Center
+              </span>
+              <span className="text-[10px] text-slate-300 tracking-widest uppercase block mt-0.5">
+                AI Official Diagnostic System
+              </span>
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-            學測英文作文 AI 導師
-          </h1>
-          <p className="text-slate-600 text-sm md:text-base max-w-2xl leading-relaxed">
-            支援圖片與 PDF 題目卷深度解析、分層級靈感引導與大考中心（CEEC）標準精準批改。
-          </p>
-        </header>
+          <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+            <span className="hover:text-white transition cursor-pointer">Evaluation Standards</span>
+            <span className="hover:text-white transition cursor-pointer">Rubric Guide</span>
+            <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-300 rounded-full">
+              Official Benchmark Mode
+            </span>
+          </div>
+        </div>
+      </header>
 
-        {/* 主分區：引導區 vs 批改區 */}
-        <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-200/80 rounded-2xl border border-slate-300/60">
+      {/* 主體內容容器 */}
+      <main className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+
+        {/* 標題與簡介卡片 */}
+        <div className="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#0A2540] tracking-tight">
+            大考中心 CEEC 標準英文作文 AI 診斷與評估系統
+          </h1>
+          <p className="text-slate-600 text-sm leading-relaxed">
+            結合多模態視覺比對技術與大考中心閱卷指標，提供學術級作文引導與全文診斷報告。
+          </p>
+        </div>
+
+        {/* 🏛️ 主分區切換（ETS 頁籤風格） */}
+        <div className="flex border-b border-slate-300">
           <button
             onClick={() => {
               setMainMode('guidance');
               setGuidanceResult(null);
               setCorrectionResult(null);
             }}
-            className={`py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+            className={`px-6 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               mainMode === 'guidance'
-                ? 'bg-white text-emerald-800 shadow-sm border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                ? 'border-[#0A2540] text-[#0A2540] bg-white rounded-t-lg border-t border-x border-slate-200'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            💡 作文靈感引導區
+            <span>💡 寫作架構與靈感引導</span>
           </button>
           <button
             onClick={() => {
@@ -175,19 +195,19 @@ export default function Home() {
               setGuidanceResult(null);
               setCorrectionResult(null);
             }}
-            className={`py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+            className={`px-6 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               mainMode === 'correction'
-                ? 'bg-white text-emerald-800 shadow-sm border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                ? 'border-[#0A2540] text-[#0A2540] bg-white rounded-t-lg border-t border-x border-slate-200'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            📝 深度作文批改區（大考標準）
+            <span>📝 官方標準全文精細批改</span>
           </button>
         </div>
 
-        {/* 引導區專屬子選單 */}
+        {/* 引導區子選單 */}
         {mainMode === 'guidance' && (
-          <div className="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {(Object.keys(GUIDANCE_CONFIG) as GuidanceType[]).map((key) => {
               const isActive = guidanceType === key;
               return (
@@ -197,10 +217,10 @@ export default function Home() {
                     setGuidanceType(key);
                     setTopic('');
                   }}
-                  className={`flex-1 min-w-[120px] py-2 text-xs font-semibold rounded-lg transition-all ${
+                  className={`p-3 text-xs font-bold rounded-lg border text-center transition-all ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                      ? 'bg-[#0A2540] text-white border-[#0A2540] shadow-sm'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
                   {GUIDANCE_CONFIG[key].label}
@@ -210,11 +230,11 @@ export default function Home() {
           </div>
         )}
 
-        {/* 💡 靈感引導區：目標分數選擇器 */}
+        {/* 💡 目標分數選擇器 (僅引導區顯示) */}
         {mainMode === 'guidance' && (
-          <div className="space-y-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-              選擇你的目標分數 / 目前程度區間
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <label className="text-xs font-extrabold text-slate-700 tracking-wider uppercase block">
+              選擇學生程度與目標分級 (Target Level)
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {SCORE_OPTIONS.map((opt) => {
@@ -223,13 +243,13 @@ export default function Home() {
                   <button
                     key={opt.id}
                     onClick={() => setTargetScore(opt.id)}
-                    className={`p-3.5 rounded-xl border text-left transition-all ${
+                    className={`p-4 rounded-lg border text-left transition-all ${
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20'
-                        : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                        ? 'border-[#0A2540] bg-slate-50 ring-2 ring-[#0A2540]/10'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
-                    <div className={`text-sm font-bold ${isSelected ? 'text-emerald-800' : 'text-slate-800'}`}>
+                    <div className={`text-sm font-bold ${isSelected ? 'text-[#0A2540]' : 'text-slate-800'}`}>
                       {opt.label}
                     </div>
                     <div className="text-xs text-slate-500 mt-1">{opt.desc}</div>
@@ -240,17 +260,21 @@ export default function Home() {
           </div>
         )}
 
-        {/* 輸入區塊 */}
-        <div className="space-y-5 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+        {/* 輸入卡片區 */}
+        <div className="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm space-y-6">
           
-          {/* 📎 圖片 / PDF 檔案上傳區 */}
-          <div className="space-y-2 pb-2">
-            <label className="text-sm font-semibold text-slate-700 block">
-              上傳題目圖片或 PDF 題目卷（上傳後可不填文字）
-            </label>
+          {/* 📎 題目圖片/PDF 上傳區 */}
+          <div className="space-y-2 pb-4 border-b border-slate-100">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                題目試卷上傳 (Image / PDF Document Upload)
+              </label>
+              <span className="text-xs text-slate-400">支援 JPG, PNG, PDF 格式</span>
+            </div>
+            
             <div className="flex items-center gap-4">
-              <label className="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition flex items-center gap-2">
-                <span>📎 選擇檔案 (JPG, PNG, PDF)</span>
+              <label className="cursor-pointer px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                <span>📎 選擇題目檔案</span>
                 <input
                   type="file"
                   accept="image/*,.pdf"
@@ -259,18 +283,17 @@ export default function Home() {
                 />
               </label>
 
-              {/* 檔案預覽/標示 */}
               {fileData && (
-                <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs text-emerald-800">
+                <div className="flex items-center gap-2.5 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-lg text-xs text-slate-800">
                   {fileData.mimeType.includes('image') ? (
-                    <img src={fileData.base64} alt="Preview" className="h-8 w-8 object-cover rounded border" />
+                    <img src={fileData.base64} alt="Preview" className="h-7 w-7 object-cover rounded border" />
                   ) : (
-                    <span className="font-bold">📄 PDF</span>
+                    <span className="font-bold text-rose-600">📄 PDF</span>
                   )}
-                  <span className="truncate max-w-[150px]">{fileData.name}</span>
+                  <span className="truncate max-w-[180px] font-medium">{fileData.name}</span>
                   <button
                     onClick={() => setFileData(null)}
-                    className="ml-1 text-rose-500 font-bold hover:text-rose-700"
+                    className="ml-2 text-slate-400 hover:text-rose-600 font-bold"
                   >
                     ×
                   </button>
@@ -279,13 +302,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 題目欄位 */}
+          {/* 題目文字欄位 */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm font-semibold text-slate-700">
-              <label htmlFor="topic-input">
-                {mainMode === 'guidance' ? '作文題目 / 欲發想的情境描述（可選填）' : '1. 作文題目描述（若已上傳檔案可選填）'}
+            <div className="flex justify-between items-center">
+              <label htmlFor="topic-input" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                {mainMode === 'guidance' ? '作文題目 / 欲發想之情境描述 (Prompt)' : '1. 作文題目描述'}
               </label>
-              <span className="text-xs text-slate-400 font-normal">{topic.length} 字</span>
+              <span className="text-xs text-slate-400">{topic.length} 字</span>
             </div>
             <textarea
               id="topic-input"
@@ -294,41 +317,45 @@ export default function Home() {
               onChange={(e) => setTopic(e.target.value)}
               placeholder={
                 fileData
-                  ? '已上傳檔案，AI 將自動辨識內容；如有補充說明可寫在此處...'
+                  ? '已成功夾帶檔案，系統將自動解析。如有額外說明可填寫於此...'
                   : GUIDANCE_CONFIG[guidanceType].placeholder
               }
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm transition-all resize-none leading-relaxed"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 focus:border-[#0A2540] text-sm transition-all resize-none leading-relaxed"
             />
           </div>
 
-          {/* 批改區：英文內文輸入欄 */}
+          {/* 批改區：英文內文 */}
           {mainMode === 'correction' && (
             <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex justify-between items-center text-sm font-semibold text-slate-700">
-                <label htmlFor="essay-input">2. 貼上英文作文全文（將檢驗文法、拼字、標點與組織）</label>
-                <span className="text-xs text-slate-400 font-normal">{userEssay.length} 字</span>
+              <div className="flex justify-between items-center">
+                <label htmlFor="essay-input" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  2. 貼上考生作文內文 (Student Response)
+                </label>
+                <span className="text-xs text-slate-400">{userEssay.length} 字</span>
               </div>
               <textarea
                 id="essay-input"
-                rows={8}
+                rows={9}
                 value={userEssay}
                 onChange={(e) => setUserEssay(e.target.value)}
-                placeholder="Please paste your full English essay here..."
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm transition-all resize-none leading-relaxed font-mono"
+                placeholder="Please paste the student's full English essay here for official diagnostic review..."
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-4 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 focus:border-[#0A2540] text-sm transition-all resize-none leading-relaxed font-mono"
               />
             </div>
           )}
 
-          {/* 試用範例 */}
+          {/* 快速示範按鈕 */}
           {mainMode === 'guidance' && !fileData && (
             <div className="space-y-2">
-              <span className="text-xs font-medium text-slate-400 block">快速點擊試用：</span>
+              <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+                快速體驗試用範例：
+              </span>
               <div className="flex flex-wrap gap-2">
                 {GUIDANCE_CONFIG[guidanceType].examples.map((ex, idx) => (
                   <button
                     key={idx}
                     onClick={() => setTopic(ex)}
-                    className="text-xs text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 border border-slate-200 px-3 py-1.5 rounded-lg transition text-left truncate max-w-xs"
+                    className="text-xs text-slate-600 hover:text-[#0A2540] bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded transition text-left truncate max-w-xs border border-slate-200"
                   >
                     {ex}
                   </button>
@@ -337,11 +364,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* 生成按鈕 */}
+          {/* 按鈕 */}
           <button
             onClick={handleGenerate}
             disabled={isButtonDisabled}
-            className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 font-bold rounded-xl text-white text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20 active:scale-[0.99]"
+            className="w-full py-4 bg-[#0A2540] hover:bg-[#081e33] disabled:bg-slate-200 disabled:text-slate-400 font-bold rounded-lg text-white text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md active:scale-[0.99]"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -349,20 +376,20 @@ export default function Home() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                {mainMode === 'correction' ? '圖片/PDF 精細解析與作文批改中...' : '圖片/PDF 深度閱讀與靈感生成中...'}
+                官方診斷模組比對中，請稍候...
               </span>
             ) : mainMode === 'correction' ? (
-              '進行大考標準精細批改'
+              '產生官方作文診斷報告 (Start Assessment)'
             ) : (
-              '產生寫作引導與高分詞彙'
+              '生成學術引導與高分詞彙 (Generate Guidance)'
             )}
           </button>
         </div>
 
-        {/* Loading 動畫 */}
+        {/* Loading 狀態 */}
         {loading && (
-          <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4 animate-pulse">
-            <div className="h-5 bg-slate-200 rounded w-1/4"></div>
+          <div className="p-8 bg-white border border-slate-200 rounded-xl space-y-4 animate-pulse">
+            <div className="h-6 bg-slate-200 rounded w-1/3"></div>
             <div className="space-y-2">
               <div className="h-4 bg-slate-100 rounded w-full"></div>
               <div className="h-4 bg-slate-100 rounded w-5/6"></div>
@@ -371,140 +398,165 @@ export default function Home() {
           </div>
         )}
 
-        {/* 💡 靈感引導結果展示區 */}
+        {/* 💡 靈感引導結果展示區（完全無符號，彩色 HTML 渲染） */}
         {guidanceResult && !loading && (
           <div className="space-y-6">
             
-            {/* 🟢 破題與主題立意 (翠綠框) */}
+            {/* 🟢 核心主題與破題 */}
             {guidanceResult.theme && (
-              <div className="p-6 md:p-8 bg-emerald-50/50 border-2 border-emerald-500 rounded-2xl shadow-sm space-y-3">
-                <div className="flex justify-between items-center border-b border-emerald-200 pb-3">
-                  <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
-                    🟢 核心主題與破題立意建議
-                  </h3>
+              <div className="p-6 md:p-8 bg-white border-l-4 border-l-emerald-500 border-y border-r border-slate-200 rounded-r-xl shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded">
+                    SECTION 1: THESIS & FRAMING
+                  </span>
                   <button
-                    onClick={() => handleCopy(guidanceResult.theme)}
-                    className="text-xs px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium transition"
+                    onClick={() => handleCopy(guidanceResult.theme, 'theme')}
+                    className="text-xs px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition"
                   >
-                    複製內容
+                    {copiedSection === 'theme' ? '已複製純文字' : '複製內容'}
                   </button>
                 </div>
-                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                  {guidanceResult.theme}
-                </div>
+                <div
+                  className="prose prose-slate max-w-none text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: guidanceResult.theme }}
+                />
               </div>
             )}
 
-            {/* 藍 段落大綱與句型 (湛藍框) */}
+            {/* 🔵 段落大綱與句型 */}
             {guidanceResult.outline && (
-              <div className="p-6 md:p-8 bg-sky-50/50 border-2 border-sky-500 rounded-2xl shadow-sm space-y-3">
-                <div className="flex justify-between items-center border-b border-sky-200 pb-3">
-                  <h3 className="text-lg font-bold text-sky-900 flex items-center gap-2">
-                    🔵 段落大綱與必備句型
-                  </h3>
+              <div className="p-6 md:p-8 bg-white border-l-4 border-l-sky-500 border-y border-r border-slate-200 rounded-r-xl shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded">
+                    SECTION 2: OUTLINE & STRUCTURES
+                  </span>
                   <button
-                    onClick={() => handleCopy(guidanceResult.outline)}
-                    className="text-xs px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 font-medium transition"
+                    onClick={() => handleCopy(guidanceResult.outline, 'outline')}
+                    className="text-xs px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition"
                   >
-                    複製內容
+                    {copiedSection === 'outline' ? '已複製純文字' : '複製內容'}
                   </button>
                 </div>
-                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                  {guidanceResult.outline}
-                </div>
+                <div
+                  className="prose prose-slate max-w-none text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: guidanceResult.outline }}
+                />
               </div>
             )}
 
-            {/* 🟣 單字片語與俗諺 (紫色框) */}
+            {/* 🟣 高分詞彙與俗諺 */}
             {guidanceResult.vocab && (
-              <div className="p-6 md:p-8 bg-purple-50/50 border-2 border-purple-500 rounded-2xl shadow-sm space-y-3">
-                <div className="flex justify-between items-center border-b border-purple-200 pb-3">
-                  <h3 className="text-lg font-bold text-purple-900 flex items-center gap-2">
-                    🟣 高分關鍵單字、片語與萬用俗諺
-                  </h3>
+              <div className="p-6 md:p-8 bg-white border-l-4 border-l-purple-500 border-y border-r border-slate-200 rounded-r-xl shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-purple-800 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded">
+                    SECTION 3: LEXICAL RESOURCE & QUOTES
+                  </span>
                   <button
-                    onClick={() => handleCopy(guidanceResult.vocab)}
-                    className="text-xs px-2.5 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium transition"
+                    onClick={() => handleCopy(guidanceResult.vocab, 'vocab')}
+                    className="text-xs px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition"
                   >
-                    複製單字庫
+                    {copiedSection === 'vocab' ? '已複製純文字' : '複製單字庫'}
                   </button>
                 </div>
-                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                  {guidanceResult.vocab}
-                </div>
+                <div
+                  className="prose prose-slate max-w-none text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: guidanceResult.vocab }}
+                />
               </div>
             )}
 
           </div>
         )}
 
-        {/* 📝 作文批改結果展示區 */}
+        {/* 📝 批改結果展示區（ETS 官方 Score Card 風格） */}
         {correctionResult && !loading && (
           <div className="space-y-6">
-            <div className="p-6 md:p-8 bg-emerald-50/50 border-2 border-emerald-500 rounded-2xl shadow-sm space-y-4">
-              <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-emerald-200 pb-4 gap-2">
+            
+            {/* 總評與分數卡片 */}
+            <div className="p-6 md:p-8 bg-white border-l-4 border-l-[#0A2540] border-y border-r border-slate-200 rounded-r-xl shadow-md space-y-6">
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-5 gap-4">
                 <div>
-                  <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">
-                    CEEC 大考中心標準預估得分
+                  <span className="text-[11px] font-extrabold text-[#0A2540] tracking-widest uppercase block">
+                    Official Scale Score
                   </span>
-                  <div className="text-4xl md:text-5xl font-black text-emerald-800 mt-1">
-                    {correctionResult.score}
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-5xl font-black text-[#0A2540]">{correctionResult.score}</span>
+                    <span className="text-slate-400 text-sm font-semibold">/ 20.0</span>
                   </div>
                 </div>
+
                 <button
-                  onClick={() => handleCopy(correctionResult.summary)}
-                  className="self-start md:self-center text-xs px-3 py-1.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold transition"
+                  onClick={() => handleCopy(correctionResult.summary, 'summary')}
+                  className="self-start md:self-center px-4 py-2 bg-[#0A2540] hover:bg-[#081e33] text-white text-xs font-bold rounded transition shadow-sm"
                 >
-                  複製總評報告
+                  {copiedSection === 'summary' ? '已複製完整報告' : '複製診斷報告'}
                 </button>
               </div>
 
-              <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                {correctionResult.summary}
-              </div>
+              <div
+                className="prose prose-slate max-w-none text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: correctionResult.summary }}
+              />
             </div>
 
+            {/* 🔴 文法用語錯誤對照 */}
             {correctionResult.errors && (
-              <div className="p-6 md:p-8 bg-rose-50/50 border-2 border-rose-500 rounded-2xl shadow-sm space-y-3">
-                <div className="flex justify-between items-center border-b border-rose-200 pb-3">
-                  <h3 className="text-lg font-bold text-rose-900 flex items-center gap-2">
-                    🔴 文法、用語與標點符號修正
-                  </h3>
+              <div className="p-6 md:p-8 bg-white border-l-4 border-l-rose-500 border-y border-r border-slate-200 rounded-r-xl shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <span className="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded">
+                    DIAGNOSTICS: GRAMMAR & USAGE CORRECTIONS
+                  </span>
                   <button
-                    onClick={() => handleCopy(correctionResult.errors)}
-                    className="text-xs px-2.5 py-1 rounded bg-rose-100 hover:bg-rose-200 text-rose-800 font-medium transition"
+                    onClick={() => handleCopy(correctionResult.errors, 'errors')}
+                    className="text-xs px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition"
                   >
-                    複製修正對照
+                    {copiedSection === 'errors' ? '已複製錯誤對照' : '複製對照表'}
                   </button>
                 </div>
-                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                  {correctionResult.errors}
-                </div>
+                <div
+                  className="prose prose-slate max-w-none text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: correctionResult.errors }}
+                />
               </div>
             )}
 
+            {/* 🌲 示範範文 */}
             {correctionResult.modelEssay && (
-              <div className="p-6 md:p-8 bg-emerald-950/5 border-2 border-emerald-800 rounded-2xl shadow-sm space-y-3">
-                <div className="flex justify-between items-center border-b border-emerald-800/20 pb-3">
-                  <h3 className="text-lg font-bold text-emerald-950 flex items-center gap-2">
-                    🌲 高分示範範文 (Model Essay)
-                  </h3>
+              <div className="p-6 md:p-8 bg-slate-900 text-slate-100 rounded-xl shadow-md space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2.5 py-1 rounded">
+                    BENCHMARK MODEL RESPONSE (BAND 16+)
+                  </span>
                   <button
-                    onClick={() => handleCopy(correctionResult.modelEssay)}
-                    className="text-xs px-2.5 py-1 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-medium transition"
+                    onClick={() => handleCopy(correctionResult.modelEssay, 'model')}
+                    className="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition"
                   >
-                    複製範文
+                    {copiedSection === 'model' ? '已複製範文' : '複製範文'}
                   </button>
                 </div>
-                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed font-serif">
-                  {correctionResult.modelEssay}
-                </div>
+                <div
+                  className="prose prose-invert max-w-none text-sm leading-relaxed font-serif"
+                  dangerouslySetInnerHTML={{ __html: correctionResult.modelEssay }}
+                />
               </div>
             )}
+
           </div>
         )}
 
-      </div>
-    </main>
+      </main>
+
+      {/* 🏛️ 頁腳 Footer */}
+      <footer className="border-t border-slate-200 bg-white mt-16 py-8 text-center text-xs text-slate-500">
+        <div className="max-w-5xl mx-auto px-6 space-y-2">
+          <p className="font-semibold text-slate-600">
+            GSAT & CEEC English Writing Assessment System
+          </p>
+          <p>© 2026 Assessment Hub. All rights reserved. Built with Multimodal Assessment Standards.</p>
+        </div>
+      </footer>
+
+    </div>
   );
 }
