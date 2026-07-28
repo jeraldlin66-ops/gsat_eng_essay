@@ -5,6 +5,7 @@ import { generateEssayHelp } from './actions';
 
 type MainMode = 'guidance' | 'correction';
 type GuidanceType = 'picture' | 'chart' | 'essay' | 'vocab';
+type TargetScore = 'under10' | '11to15' | '16to20';
 
 const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string; examples: string[] }> = {
   picture: {
@@ -41,14 +42,29 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
   },
 };
 
+const SCORE_OPTIONS: { id: TargetScore; label: string; desc: string }[] = [
+  { id: 'under10', label: '10 分以下', desc: '基礎打底 · 通順句構與常用詞彙' },
+  { id: '11to15', label: '11 ~ 15 分', desc: '進階提升 · 轉折句型與段落銜接' },
+  { id: '16to20', label: '16 ~ 20 分', desc: '高分頂尖 · 頂級修辭與深層立意' },
+];
+
 export default function Home() {
   const [mainMode, setMainMode] = useState<MainMode>('guidance');
   const [guidanceType, setGuidanceType] = useState<GuidanceType>('picture');
+  const [targetScore, setTargetScore] = useState<TargetScore>('11to15');
   
   const [topic, setTopic] = useState('');
   const [userEssay, setUserEssay] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState('');
+
+  // 結果狀態
+  const [guidanceResult, setGuidanceResult] = useState('');
+  const [correctionResult, setCorrectionResult] = useState<{
+    summary: string;
+    errors: string;
+    modelEssay: string;
+  } | null>(null);
+
   const [copied, setCopied] = useState(false);
 
   const handleGenerate = async () => {
@@ -56,22 +72,30 @@ export default function Home() {
     if (mainMode === 'correction' && !userEssay.trim()) return;
 
     setLoading(true);
-    setResult('');
+    setGuidanceResult('');
+    setCorrectionResult(null);
 
     try {
       const subTypeName = mainMode === 'guidance' ? GUIDANCE_CONFIG[guidanceType].label : '作文批改';
-      const res = await generateEssayHelp(mainMode, subTypeName, topic, userEssay);
-      setResult(res);
+      const res = await generateEssayHelp(mainMode, subTypeName, targetScore, topic, userEssay);
+
+      if (res.error) {
+        alert(res.error);
+      } else if (res.text) {
+        setGuidanceResult(res.text);
+      } else if (res.correctionResult) {
+        setCorrectionResult(res.correctionResult);
+      }
     } catch (err) {
-      setResult('生成失敗，請確認伺服器設定。');
+      alert('生成失敗，請確認伺服器設定。');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCopy = () => {
-    if (!result) return;
-    navigator.clipboard.writeText(result);
+  const handleCopy = (text: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -89,7 +113,7 @@ export default function Home() {
             學測英文作文 AI 導師
           </h1>
           <p className="text-slate-600 text-sm md:text-base max-w-2xl leading-relaxed">
-            結合靈感寫作引導與大考中心評分標準（CEEC）精準批改，全方位提升寫作實力。
+            分層級靈感引導與大考中心（CEEC）標準精準批改，全方位帶領你向高分邁進。
           </p>
         </header>
 
@@ -98,7 +122,8 @@ export default function Home() {
           <button
             onClick={() => {
               setMainMode('guidance');
-              setResult('');
+              setGuidanceResult('');
+              setCorrectionResult(null);
             }}
             className={`py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
               mainMode === 'guidance'
@@ -111,7 +136,8 @@ export default function Home() {
           <button
             onClick={() => {
               setMainMode('correction');
-              setResult('');
+              setGuidanceResult('');
+              setCorrectionResult(null);
             }}
             className={`py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
               mainMode === 'correction'
@@ -147,6 +173,34 @@ export default function Home() {
             })}
           </div>
         )}
+
+        {/* 🌟 目標分數區間選擇器 */}
+        <div className="space-y-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+            選擇你的目標分數 / 目前程度區間
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {SCORE_OPTIONS.map((opt) => {
+              const isSelected = targetScore === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => setTargetScore(opt.id)}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    isSelected
+                      ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20'
+                      : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                  }`}
+                >
+                  <div className={`text-sm font-bold ${isSelected ? 'text-emerald-800' : 'text-slate-800'}`}>
+                    {opt.label}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">{opt.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* 輸入區塊 */}
         <div className="space-y-5 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
@@ -243,23 +297,86 @@ export default function Home() {
           </div>
         )}
 
-        {/* 結果展示區 */}
-        {result && !loading && (
+        {/* 💡 引導結果展示區 */}
+        {guidanceResult && !loading && (
           <div className="p-6 md:p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-              <h2 className="text-base font-bold text-emerald-900">
-                {mainMode === 'correction' ? '大考中心標準批改與分析報告' : '寫作引導與詞彙發想建議'}
-              </h2>
+              <h2 className="text-base font-bold text-emerald-900">寫作引導與詞彙發想建議</h2>
               <button
-                onClick={handleCopy}
+                onClick={() => handleCopy(guidanceResult)}
                 className="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-medium transition flex items-center gap-1.5 border border-emerald-200"
               >
-                {copied ? '已複製內容' : '複製報告內容'}
+                {copied ? '已複製內容' : '複製內容'}
               </button>
             </div>
             <div className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed tracking-wide font-sans">
-              {result}
+              {guidanceResult}
             </div>
+          </div>
+        )}
+
+        {/* 📝 批改結果展示區 (綠框 / 紅框 / 深綠框) */}
+        {correctionResult && !loading && (
+          <div className="space-y-6">
+            
+            {/* 🟢 總評區塊 (綠框) */}
+            <div className="p-6 md:p-8 bg-emerald-50/50 border-2 border-emerald-500 rounded-2xl shadow-sm space-y-3">
+              <div className="flex justify-between items-center border-b border-emerald-200 pb-3">
+                <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                  <span>🟢</span> 總評與四大維度評分（大考中心 CEEC 標準）
+                </h3>
+                <button
+                  onClick={() => handleCopy(correctionResult.summary)}
+                  className="text-xs px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium transition"
+                >
+                  複製總評
+                </button>
+              </div>
+              <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
+                {correctionResult.summary}
+              </div>
+            </div>
+
+            {/* 🔴 文法用語錯誤對照 (紅框) */}
+            {correctionResult.errors && (
+              <div className="p-6 md:p-8 bg-rose-50/50 border-2 border-rose-500 rounded-2xl shadow-sm space-y-3">
+                <div className="flex justify-between items-center border-b border-rose-200 pb-3">
+                  <h3 className="text-lg font-bold text-rose-900 flex items-center gap-2">
+                    <span>🔴</span> 文法、用語與標點符號修正
+                  </h3>
+                  <button
+                    onClick={() => handleCopy(correctionResult.errors)}
+                    className="text-xs px-2.5 py-1 rounded bg-rose-100 hover:bg-rose-200 text-rose-800 font-medium transition"
+                  >
+                    複製修正對照
+                  </button>
+                </div>
+                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
+                  {correctionResult.errors}
+                </div>
+              </div>
+            )}
+
+            {/* 🌲 適合範文 (深綠框) */}
+            {correctionResult.modelEssay && (
+              <div className="p-6 md:p-8 bg-emerald-950/5 border-2 border-emerald-800 rounded-2xl shadow-sm space-y-3">
+                <div className="flex justify-between items-center border-b border-emerald-800/20 pb-3">
+                  <h3 className="text-lg font-bold text-emerald-950 flex items-center gap-2">
+                    <span>🌲</span> 適合該目標層級的示範範文 (Model Essay)
+                  </h3>
+                  <button
+                    onClick={() => handleCopy(correctionResult.modelEssay)}
+                    className="text-xs px-2.5 py-1 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-medium transition"
+                  >
+                    複製範文
+                  </button>
+                </div>
+                <div className="whitespace-pre-wrap text-slate-800 text-sm leading-relaxed font-serif">
+                  {correctionResult.modelEssay}
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 
