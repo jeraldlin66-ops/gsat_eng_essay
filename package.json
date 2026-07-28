@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.22",
+    "ai": "^7.0.40",
     "groq-sdk": "^1.4.0",
     "lucide-react": "^1.27.0",
     "next": "16.2.12",
