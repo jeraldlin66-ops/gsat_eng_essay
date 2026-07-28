@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { generateEssayHelp } from './actions';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'picture' | 'chart' | 'essay'>('picture');
@@ -12,18 +13,17 @@ export default function Home() {
     if (!topic.trim()) return;
     setLoading(true);
     setResult('');
-    
+
     try {
-      // 模擬/呼叫後端 API
-      const res = await fetch('/api/essay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, type: activeTab }),
-      });
-      const data = await res.json();
-      setResult(data.result || '成功生成！請查看建議架構與單字。');
+      const tabNames = {
+        picture: '看圖寫作',
+        chart: '圖表分析',
+        essay: '主題論述',
+      };
+      const res = await generateEssayHelp(topic, tabNames[activeTab]);
+      setResult(res);
     } catch (err) {
-      setResult('生成時發生錯誤，請確認 API Key 是否設定正確。');
+      setResult('生成時發生錯誤，請稍後再試。');
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export default function Home() {
       {result && (
         <div className="mt-8 p-6 bg-slate-900/80 border border-slate-800 rounded-xl">
           <h3 className="text-lg font-semibold text-indigo-400 mb-3">💡 靈感導師建議：</h3>
-          <div className="whitespace-pre-line text-slate-300 text-sm leading-relaxed">
+          <div className="whitespace-pre-wrap text-slate-300 text-sm leading-relaxed">
             {result}
           </div>
         </div>
