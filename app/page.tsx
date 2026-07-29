@@ -27,9 +27,9 @@ const GUIDANCE_CONFIG: Record<GuidanceType, { label: string; placeholder: string
 };
 
 const SCORE_OPTIONS: { id: TargetScore; label: string; desc: string }[] = [
-  { id: 'under10', label: '10 分以下', desc: '著重句型完整度與基礎詞彙' },
-  { id: '11to15', label: '11 – 15 分', desc: '強化段落銜接與道地詞彙' },
-  { id: '16to20', label: '16 – 20 分', desc: '精準破題與深度立意發展' },
+  { id: 'under10', label: '10 分以下', desc: '短句正確、兩段完成與基礎詞彙' },
+  { id: '11to15', label: '11 – 15 分', desc: '理由舉例、段落銜接與 B1–B2 搭配詞' },
+  { id: '16to20', label: '16 – 20 分', desc: '細節推論、自然變化句構與精準用字' },
 ];
 
 export default function Home() {
@@ -114,7 +114,7 @@ export default function Home() {
         setCorrectionResult(res.correctionResult);
       }
     } catch {
-      alert('系統評量請求失敗，請稍後重試。');
+      alert('暫時無法完成，請稍後再試。');
     } finally {
       setLoading(false);
     }
@@ -135,17 +135,17 @@ export default function Home() {
         <div className="flex justify-center mb-9">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/80 border border-white rounded-full text-[11px] font-semibold tracking-wide text-[#547067] shadow-sm backdrop-blur">
             <span className="w-2 h-2 rounded-full bg-[#3F8A70] shadow-[0_0_0_4px_rgba(63,138,112,0.12)]"></span>
-            <span>CEEC Writing Assessment Standard</span>
+            <span>英文作文練習</span>
           </div>
         </div>
 
         {/* 🚀 Hero 區塊：Notion 標題風格 */}
         <section className="text-center mb-12 space-y-5">
           <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-[58px] text-[#26332f] leading-[1.12] tracking-[-0.045em]">
-            學測英文作文，不只批改，更教你怎麼拿高分。
+            把英文作文，慢慢寫好。
           </h1>
           <p className="text-[#68736f] text-base md:text-lg font-normal leading-relaxed max-w-[620px] mx-auto">
-            依據大考中心閱卷規準，提供分項評分、語法細節修訂與標竿範文。
+            貼上題目和作文，看看哪裡可以寫得更清楚、更自然。
           </p>
           <div className="flex flex-wrap justify-center gap-2.5 pt-2 text-xs text-[#5b6d66]">
             <span className="rounded-full border border-[#d8e6df] bg-white/65 px-3 py-1.5">四向度評分</span>
@@ -171,7 +171,7 @@ export default function Home() {
                   : 'text-[#787774] hover:text-[#37352F]'
               }`}
             >
-              作文評量 (Assessment)
+              幫我改作文
             </button>
             <button
               onClick={() => {
@@ -185,7 +185,7 @@ export default function Home() {
                   : 'text-[#787774] hover:text-[#37352F]'
               }`}
             >
-              寫作發想 (Guidance)
+              一起想題目
             </button>
           </div>
 
@@ -340,7 +340,7 @@ export default function Home() {
               disabled={isButtonDisabled}
               className="w-full h-[48px] bg-[#2383E2] hover:bg-[#1D6FCD] text-white font-medium rounded-xl text-xs tracking-wider transition-all disabled:bg-[#E9E8E4] disabled:text-[#A8A7A1] disabled:cursor-not-allowed"
             >
-              {loading ? '系統分析中...' : mainMode === 'correction' ? '開始 CEEC 評量' : '開始寫作發想'}
+              {loading ? '整理中...' : mainMode === 'correction' ? '看看怎麼修改' : '給我寫作方向'}
             </button>
           </div>
 
@@ -383,7 +383,7 @@ export default function Home() {
                 <div className="flex justify-between items-end border-b border-[#E9E8E4] pb-4">
                   <div className="text-left">
                     <span className="text-[11px] font-semibold text-[#787774] uppercase tracking-wider block">
-                      CEEC 模擬預估得分
+                      作文分數參考
                     </span>
                     <span className="font-heading text-4xl font-bold text-[#2383E2] mt-1 block">
                       {correctionResult.score}
@@ -414,10 +414,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* 📚 CEEC 評分維度說明 */}
+          {/* 📚 評分維度說明 */}
           <section className="bg-white p-8 rounded-[20px] border border-[#E9E8E4] space-y-5">
             <h2 className="text-sm font-semibold text-[#37352F] border-b border-[#E9E8E4] pb-3 text-left">
-              CEEC 大考中心英文作文評分規準
+              評分時會看這四件事
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#787774] text-left">
               <div className="p-4 notion-bg-gray rounded-xl">
@@ -443,8 +443,8 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-20 text-center text-xs text-[#787774]">
-          <p className="font-medium text-[#37352F]">CEEC Essay Assessment Standard</p>
-          <p className="text-[11px] mt-1 opacity-70">本系統參照大學入學考試中心基金會非選擇題閱卷規準設計。</p>
+          <p className="font-medium text-[#37352F]">英文作文練習</p>
+          <p className="text-[11px] mt-1 opacity-70">評分項目參考大考中心英文作文閱卷規準。</p>
         </footer>
 
       </div>

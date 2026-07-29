@@ -3,6 +3,44 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
+type TargetScore = 'under10' | '11to15' | '16to20';
+
+const TARGET_SCORE_GUIDANCE: Record<TargetScore, { label: string; instruction: string }> = {
+  under10: {
+    label: '10 分以下：基礎建構',
+    instruction: `
+【目標級分：10 分以下】
+學生現階段的首要目標是「完成切題、正確且可理解的兩段式作文」，不要堆砌難字或複雜句。
+- 審題：只選一個明確觀點或依題圖順序敘述，列出每段一定要寫到的 2–3 個重點。
+- 段落：每段 3–4 句；提供可直接代換的短句模板，以主詞＋動詞＋受詞為主。
+- 句構：只示範現在式、過去式、because 與 so；每段最多一個簡單複句。
+- 字彙：提供 6 個 A2–B1 常用字或片語；每個都要附非常短的可套用例句。
+- 練習：明確指出「先避免的錯誤」與「本次只要做到的一件事」。`,
+  },
+  '11to15': {
+    label: '11–15 分：穩定發展',
+    instruction: `
+【目標級分：11–15 分】
+學生的目標是寫出內容完整、脈絡清楚的兩段式作文，並以例子支撐觀點。
+- 審題：提出一個清楚主張，並規畫兩個理由、例子或圖像細節。
+- 段落：每段 4–5 句，需有主題句、說明與收束句；標示可使用的轉折語。
+- 句構：示範 because/although/when 引導的複句，以及一個自然的比較或關係子句。
+- 字彙：提供 6–8 個 B1–B2 常用搭配詞，附中文釋義與貼合本題的例句。
+- 練習：指出如何把基礎句改得更完整，但避免罕見字與冗長句。`,
+  },
+  '16to20': {
+    label: '16–20 分：精準深化',
+    instruction: `
+【目標級分：16–20 分】
+學生的目標是用精準立意、細節推論與自然多變的句構，寫出有層次但仍符合高中程度的文章。
+- 審題：提出具辨識度的中心觀點；針對圖像轉折或數據，加入原因、影響或對比的推論。
+- 段落：每段 5–6 句，安排有力的開頭、具體細節、讓步或轉折，並回扣題旨。
+- 句構：示範條件句、讓步句、分詞片語或較精準的比較句；每個句型都要自然、可模仿，不能為炫技而過度複雜。
+- 字彙：提供 8 個 B2 程度的精準搭配詞與替換字，附中文釋義及貼合本題的例句。
+- 練習：說明如何提升觀點深度、銜接與用字精準度，避免只羅列華麗詞彙。`,
+  },
+};
+
 export async function generateEssayHelp(
   mode: 'guidance' | 'correction',
   subType: string,
@@ -38,19 +76,25 @@ export async function generateEssayHelp(
 `;
 
   if (mode === 'guidance') {
-    const prompt = `${visionPromptIntro}${formattingInstruction}你是一位大考中心學測英文閱卷顧問。請針對題目【${topic || '詳見上傳試卷'}】，提供寫作發想與素材：
+    const selectedTarget = TARGET_SCORE_GUIDANCE[targetScore as TargetScore] ?? TARGET_SCORE_GUIDANCE['11to15'];
+    const prompt = `${visionPromptIntro}${formattingInstruction}你是一位大考中心學測英文閱卷顧問。請針對題目【${topic || '詳見上傳試卷'}】，提供寫作發想與素材。
+
+${selectedTarget.instruction}
+
+【嚴格區隔規則】
+本次輸出必須完全符合「${selectedTarget.label}」的難度與教學重點。不要同時提供其他級分的句型、字彙或建議；尤其不可將 16–20 分的複雜句型放入 10 分以下的建議。
 
 ===GUIDANCE_THEME===
 <h4>一、 審題要旨與寫作方向</h4>
-<p>(剖析題目核心訴求、圖片轉折或圖表重點，給予切題的寫作立意與發展脈絡)</p>
+<p>(先以一句話說明本次「${selectedTarget.label}」的寫作目標，再依此級分剖析題目核心、圖片轉折或圖表重點)</p>
 
 ===GUIDANCE_OUTLINE===
 <h4>二、 段落發展與常用句型</h4>
-<p>(提供符合學測兩段式寫作之結構說明與銜接轉折語彙)</p>
+<p>(依此級分規劃兩段式結構；每段提供具體寫作任務與 2 個符合該級分的可模仿句型)</p>
 
 ===GUIDANCE_VOCAB===
 <h4>三、 單字與片語建議</h4>
-<p>(提供 6-8 個適合學測 B1-B2 程度之精準詞彙與常用片語，附中文釋義與例句說明)</p>
+<p>(只提供符合本目標級分的字彙、片語與例句；結尾附上一項最優先的練習任務)</p>
 `;
 
     try {

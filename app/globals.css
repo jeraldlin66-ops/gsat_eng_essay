@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --font-noto: 'Noto Sans TC', -apple-system, sans-serif;
-  --font-space: 'Space Grotesk', var(--font-noto);
+  --font-noto: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --ink: #202828;
   --paper: #fbfaf7;
   --line: #e8e5dd;
@@ -28,7 +27,7 @@ button, input, textarea {
 }
 
 .font-heading {
-  font-family: var(--font-space), var(--font-noto);
+  font-family: var(--font-noto);
 }
 
 .notion-card {
