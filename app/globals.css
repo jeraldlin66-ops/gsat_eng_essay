@@ -1,26 +1,58 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --ease-academic: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F7F5EF;
+  color: #111111;
+  font-family: 'Noto Sans TC', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+/* 淡入與微位移 */
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 順序亮燈動畫 */
+@keyframes stepActivate {
+  0% {
+    opacity: 0.4;
+    border-color: #E2E8F0;
+    background-color: #FFFFFF;
+  }
+  100% {
+    opacity: 1;
+    border-color: #1E3A5F;
+    background-color: #F8FAFC;
+  }
+}
+
+.animate-hero-fade {
+  animation: fadeInSlideUp 400ms var(--ease-academic) forwards;
+}
+
+.animate-section-fade {
+  animation: fadeInSlideUp 350ms var(--ease-academic) forwards;
+}
+
+/* 按鈕與互動組件統一 transition */
+.academic-transition {
+  transition: all 200ms var(--ease-academic);
+}
+
+/* 四步驟依序點亮 (Stagger 80ms) */
+.step-item-1 { animation: stepActivate 300ms var(--ease-academic) 0ms forwards; }
+.step-item-2 { animation: stepActivate 300ms var(--ease-academic) 80ms forwards; }
+.step-item-3 { animation: stepActivate 300ms var(--ease-academic) 160ms forwards; }
+.step-item-4 { animation: stepActivate 300ms var(--ease-academic) 240ms forwards; }
