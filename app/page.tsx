@@ -113,7 +113,7 @@ export default function Home() {
       } else if (res.correctionResult) {
         setCorrectionResult(res.correctionResult);
       }
-    } catch (err) {
+    } catch {
       alert('系統評量請求失敗，請稍後重試。');
     } finally {
       setLoading(false);
