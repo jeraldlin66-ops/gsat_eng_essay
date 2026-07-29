@@ -4,69 +4,36 @@
 
 :root {
   --font-noto: 'Noto Sans TC', -apple-system, sans-serif;
-  --font-[#2563EB]space: 'Space Grotesk', var(--font-noto);
-  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-space: 'Space Grotesk', var(--font-noto);
+  --ease-clean: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
-  background-color: #FCFCFB;
+  background-color: #FBFBFA;
   color: #0F172A;
   font-family: var(--font-noto);
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-heading {
   font-family: var(--font-space), var(--font-noto);
 }
 
-/* Premium 微陰影與圓角 */
-.edtech-shadow-sm {
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+/* Notion / Linear 極簡柔和微陰影 */
+.minimal-shadow {
+  box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.04), 0 2px 8px -1px rgba(15, 23, 42, 0.02);
 }
 
-.edtech-shadow-hover {
-  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.06), 0 6px 12px -2px rgba(15, 23, 42, 0.03);
+.minimal-shadow-hover {
+  transition: transform 240ms var(--ease-clean), box-shadow 240ms var(--ease-clean);
 }
 
-/* 淡入與微位移 keyframes */
-@keyframes premiumFadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.minimal-shadow-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.07), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
 }
 
-.animate-premium-fade {
-  animation: premiumFadeUp 280ms var(--ease-premium) forwards;
+/* 動畫 transition 統一 */
+.ui-transition {
+  transition: all 200ms var(--ease-clean);
 }
-
-/* 動畫與 Hover 控制 */
-.premium-card-transition {
-  transition: transform 260ms var(--ease-premium), box-shadow 260ms var(--ease-premium), border-color 260ms var(--ease-premium), background-color 260ms var(--ease-premium);
-}
-
-.premium-card-transition:hover {
-  transform: translateY(-3px);
-}
-
-/* 閱卷流程 Sequential Stagger (80ms 時差) */
-@keyframes stepHighlight {
-  0% {
-    opacity: 0.6;
-    border-color: #E5E7EB;
-    background-color: #FFFFFF;
-  }
-  100% {
-    opacity: 1;
-    border-color: #2563EB;
-    background-color: #F8FAFC;
-  }
-}
-
-.step-reveal-1 { animation: stepHighlight 260ms var(--ease-premium) 0ms forwards; }
-.step-reveal-2 { animation: stepHighlight 260ms var(--ease-premium) 80ms forwards; }
-.step-reveal-3 { animation: stepHighlight 260ms var(--ease-premium) 160ms forwards; }
-.step-reveal-4 { animation: stepHighlight 260ms var(--ease-premium) 240ms forwards; }
