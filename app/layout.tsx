@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Noto_Sans_TC, Space_Grotesk } from 'next-[#111111]font/google';
+import { Noto_Sans_TC, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 
 const notoSansTC = Noto_Sans_TC({
