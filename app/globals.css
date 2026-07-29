@@ -3,56 +3,68 @@
 @tailwind utilities;
 
 :root {
-  --ease-academic: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-edtech: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
-  background-color: #F7F5EF;
-  color: #111111;
-  font-family: 'Noto Sans TC', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #FAFAF8;
+  color: #0F172A;
 }
 
-/* 淡入與微位移 */
-@keyframes fadeInSlideUp {
-  0% {
+/* 標題與數字專用字體 Class */
+.font-heading {
+  font-family: var(--font-space-grotesk), var(--font-noto-sans), sans-serif;
+}
+
+/* 淡入微上浮 keyframe */
+@keyframes edtechFadeIn {
+  from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* 順序亮燈動畫 */
-@keyframes stepActivate {
+/* 步驟順序點亮（200ms - 350ms） */
+@keyframes stepLightUp {
   0% {
-    opacity: 0.4;
+    opacity: 0.5;
     border-color: #E2E8F0;
     background-color: #FFFFFF;
   }
   100% {
     opacity: 1;
-    border-color: #1E3A5F;
+    border-color: #2563EB;
     background-color: #F8FAFC;
   }
 }
 
-.animate-hero-fade {
-  animation: fadeInSlideUp 400ms var(--ease-academic) forwards;
+.animate-fade-in {
+  animation: edtechFadeIn 350ms var(--ease-edtech) forwards;
 }
 
-.animate-section-fade {
-  animation: fadeInSlideUp 350ms var(--ease-academic) forwards;
+.edtech-card-transition {
+  transition: all 200ms var(--ease-edtech);
 }
 
-/* 按鈕與互動組件統一 transition */
-.academic-transition {
-  transition: all 200ms var(--ease-academic);
+/* 微漸層背景（無 AI 紫色，僅雙色極淡藍/青漸層） */
+.hero-gradient {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(14, 165, 164, 0.04) 100%);
 }
 
-/* 四步驟依序點亮 (Stagger 80ms) */
-.step-item-1 { animation: stepActivate 300ms var(--ease-academic) 0ms forwards; }
-.step-item-2 { animation: stepActivate 300ms var(--ease-academic) 80ms forwards; }
-.step-item-3 { animation: stepActivate 300ms var(--ease-academic) 160ms forwards; }
-.step-item-4 { animation: stepActivate 300ms var(--ease-academic) 240ms forwards; }
+.cta-button-gradient {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+}
+
+.cta-button-gradient:hover {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+}
+
+/* Stagger 步驟順序動畫 */
+.step-item-1 { animation: stepLightUp 250ms var(--ease-edtech) 0ms forwards; }
+.step-item-2 { animation: stepLightUp 250ms var(--ease-edtech) 80ms forwards; }
+.step-item-3 { animation: stepLightUp 250ms var(--ease-edtech) 160ms forwards; }
+.step-item-4 { animation: stepLightUp 250ms var(--ease-edtech) 240ms forwards; }
