@@ -1,57 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --font-noto: 'Noto Sans TC', -apple-system, sans-serif;
-  --font-space: 'Space Grotesk', var(--font-noto);
-}
-
-body {
-  background-color: #F7F6F3;
-  color: #37352F;
-  font-family: var(--font-noto);
-  -webkit-font-smoothing: antialiased;
-}
-
-.font-heading {
-  font-family: var(--font-space), var(--font-noto);
-}
-
-/* Notion 質感邊框與淡陰影 */
-.notion-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E9E8E4;
-  box-shadow: 0 1px 3px rgba(15, 15, 15, 0.03), 0 0 0 1px rgba(15, 15, 15, 0.01);
-}
-
-.notion-card-hover {
-  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
-}
-
-.notion-card-hover:hover {
-  background-color: #FBFBFA;
-  border-color: #D3D1C7;
-  box-shadow: 0 2px 6px rgba(15, 15, 15, 0.05);
-}
-
-/* Notion Callout / Tag 背景色 */
-.notion-bg-gray { background-color: #F1F0EC; color: #37352F; }
-.notion-bg-blue { background-color: #E8F0FE; color: #1E40AF; }
-.notion-bg-green { background-color: #EDF3EC; color: #2E7D32; }
-.notion-bg-yellow { background-color: #FBF3DB; color: #8F6B00; }
-.notion-bg-red { background-color: #FFE2DD; color: #C4554D; }
-
-/* 微細輸入框 */
-.notion-input {
-  background-color: #F7F6F3;
-  border: 1px solid #E9E8E4;
-  color: #37352F;
-}
-
-.notion-input:focus {
-  background-color: #FFFFFF;
-  border-color: #2383E2;
-  box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.15);
-  outline: none;
-}
+printf '%s\n' \
+"@tailwind base;" \
+"@tailwind components;" \
+"@tailwind utilities;" \
+"" \
+":root {" \
+"  --font-noto: 'Noto Sans TC', -apple-system, sans-serif;" \
+"  --font-space: 'Space Grotesk', var(--font-noto);" \
+"}" \
+"" \
+"body {" \
+"  background-color: #F7F6F3;" \
+"  color: #37352F;" \
+"  font-family: var(--font-noto);" \
+"  -webkit-font-smoothing: antialiased;" \
+"}" \
+"" \
+".font-heading {" \
+"  font-family: var(--font-space), var(--font-noto);" \
+"}" \
+"" \
+".notion-card {" \
+"  background-color: #FFFFFF;" \
+"  border: 1px solid #E9E8E4;" \
+"  box-shadow: 0 1px 3px rgba(15, 15, 15, 0.03), 0 0 0 1px rgba(15, 15, 15, 0.01);" \
+"}" \
+"" \
+".notion-card-hover {" \
+"  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;" \
+"}" \
+"" \
+".notion-card-hover:hover {" \
+"  background-color: #FBFBFA;" \
+"  border-color: #D3D1C7;" \
+"  box-shadow: 0 2px 6px rgba(15, 15, 15, 0.05);" \
+"}" \
+"" \
+".notion-bg-gray { background-color: #F1F0EC; color: #37352F; }" \
+".notion-bg-blue { background-color: #E8F0FE; color: #1E40AF; }" \
+".notion-bg-green { background-color: #EDF3EC; color: #2E7D32; }" \
+".notion-bg-yellow { background-color: #FBF3DB; color: #8F6B00; }" \
+".notion-bg-red { background-color: #FFE2DD; color: #C4554D; }" \
+"" \
+".notion-input {" \
+"  background-color: #F7F6F3;" \
+"  border: 1px solid #E9E8E4;" \
+"  color: #37352F;" \
+"}" \
+"" \
+".notion-input:focus {" \
+"  background-color: #FFFFFF;" \
+"  border-color: #2383E2;" \
+"  box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.15);" \
+"  outline: none;" \
+"}" > app/globals.css
