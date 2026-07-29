@@ -41,6 +41,10 @@ const TARGET_SCORE_GUIDANCE: Record<TargetScore, { label: string; instruction: s
   },
 };
 
+function countEnglishWords(text: string) {
+  return text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)?.length ?? 0;
+}
+
 export async function generateEssayHelp(
   mode: 'guidance' | 'correction',
   subType: string,
@@ -120,6 +124,7 @@ ${selectedTarget.instruction}
     }
   } else {
     // 全文評量模式
+    const essayWordCount = countEnglishWords(userEssay ?? '');
     const prompt = `${visionPromptIntro}${formattingInstruction}你是一位大考中心（CEEC）學測英文作文閱卷委員。請依據「CEEC 學測英文作文評分標準（內容5分、組織5分、文法句構5分、字彙拼字5分，總分20分）」對學生作文進行完整評量與修正診斷。
 
 【作文題目/題目卷】：
@@ -128,11 +133,20 @@ ${topic || '請參閱上傳之題目卷'}
 【學生作文內文】：
 ${userEssay}
 
+【篇幅檢核】：
+此篇作文共有約 ${essayWordCount} 個英文單字。請把篇幅納入「內容」與「組織」兩個維度的評分，並在綜合診斷中明確說明篇幅是否足以完整回應題目。
+- 若少於 120 個英文單字，除非題目明確要求短答，必須視為發展不足；即使文法正確，內容與組織也不可給高分。
+- 若有 120–149 字，說明是否仍缺少必要細節、例子或段落發展。
+- 若有 150–300 字，以內容完整度與組織品質為主，不因單純字數扣分。
+- 若超過 300 字，檢視是否因冗長、重複或失焦而影響組織與切題性。
+字數不是第五個評分項目，不要額外加分或扣分；它必須實際反映在內容與組織分數及評語中。
+
 【標竿範文寫作規則】：
 生成之範文必須為「高中生可學習模仿之學測高分作文（約16-18分等級）」，非 GRE/SAT 滿分作文。
 1. 長度：200–300 字，約 12–16 句。
 2. 難度：CEFR B1–B2 程度，使用高中生自然會寫的字彙與句型，避免艱深罕見字與過度複雜之長難句。
 3. 結構：引言 -> 兩個主要理由/例子 -> 結論。
+4. 範文本文必須完全使用英文；不得出現中文翻譯、中文句子或中文註解。中文只能用於範文後的得分解析與詞彙說明。
 
 ===SECTION_SUMMARY===
 SCORE: [請僅填寫數字/20，例如：14.5/20]
@@ -170,6 +184,7 @@ SCORE: [請僅填寫數字/20，例如：14.5/20]
 </table>
 
 <h4>二、 閱卷綜合診斷與修改建議</h4>
+<p><b>篇幅檢核：</b>本篇約 ${essayWordCount} 個英文單字；(說明此篇幅如何影響內容與組織分數)</p>
 <p>(詳細說明整體文章優勢、主要失分要點與後續練習建議)</p>
 
 ===SECTION_ERRORS===
@@ -181,8 +196,8 @@ SCORE: [請僅填寫數字/20，例如：14.5/20]
 <div className="bg-[#F7F5EF] p-4 border border-slate-300 rounded my-3">
   <p className="font-bold text-[#1E3A5F] mb-1">【題目】</p>
   <p className="mb-3">${topic || '學測英文作文題目'}</p>
-  <p className="font-bold text-[#1E3A5F] mb-1">【範文（200–300 字）】</p>
-  <p className="font-serif leading-relaxed mb-4 text-[#111111]">[請在此輸出符合 B1-B2 程度、200-300字之範文]</p>
+  <p className="font-bold text-[#1E3A5F] mb-1">【範文（200–300 字，英文）】</p>
+  <p lang="en" className="font-serif leading-relaxed mb-4 text-[#111111]">[Write the 200–300-word model essay in English only. Do not include Chinese in this paragraph.]</p>
   <p className="font-bold text-[#1E3A5F] mb-1">【得分要點解析（100–150 字）】</p>
   <p className="mb-4">[說明此範文符合高分規準之原因]</p>
   <p className="font-bold text-[#1E3A5F] mb-1">【五個可套用句型】</p>
@@ -224,6 +239,7 @@ SCORE: [請僅填寫數字/20，例如：14.5/20]
       return {
         correctionResult: {
           score: scoreText || '14.0/20',
+          wordCount: essayWordCount,
           summary: rawSummary,
           errors: errorsMatch ? errorsMatch[1].trim() : '',
           modelEssay: modelMatch ? modelMatch[1].trim() : '',

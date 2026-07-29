@@ -52,6 +52,7 @@ export default function Home() {
 
   const [correctionResult, setCorrectionResult] = useState<{
     score: string;
+    wordCount: number;
     summary: string;
     errors: string;
     modelEssay: string;
@@ -389,7 +390,10 @@ export default function Home() {
                       {correctionResult.score}
                     </span>
                   </div>
-                  <span className="text-xs text-[#787774]">滿分 20.0</span>
+                  <div className="text-right text-xs text-[#787774] space-y-1">
+                    <span className="block">英文單字 {correctionResult.wordCount} 個</span>
+                    <span className="block">滿分 20.0</span>
+                  </div>
                 </div>
                 <div className="result-content text-xs leading-relaxed text-[#37352F] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.summary }} />
               </div>
