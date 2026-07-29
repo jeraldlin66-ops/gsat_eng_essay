@@ -126,44 +126,44 @@ export default function Home() {
     (mainMode === 'correction' && !userEssay.trim());
 
   return (
-    <div className="min-h-screen bg-[#FBFBFA] text-[#0F172A] selection:bg-slate-200">
+    <div className="min-h-screen bg-[#F7F6F3] text-[#37352F] selection:bg-[#E8F0FE] selection:text-[#1E40AF]">
       
       {/* 🏛️ 置中主容器 (Strict Max-Width 960px) */}
       <div className="max-w-[960px] mx-auto px-6 py-16 md:py-24">
 
-        {/* 頂部 Minimal Brand Key */}
-        <div className="flex justify-center mb-16">
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-white rounded-full minimal-shadow text-xs font-semibold text-[#0F172A]">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB]"></span>
-            <span>CEEC Essay Assessment Standard</span>
+        {/* 頂部 Notion Style Pill */}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-[#E9E8E4] rounded-md text-xs font-medium text-[#787774] shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#2383E2]"></span>
+            <span>CEEC Writing Assessment Standard</span>
           </div>
         </div>
 
-        {/* 🚀 Hero 區塊：中央對齊、標題 64px 700、副標 20px 400、間距 16px、下留白 64px */}
-        <section className="text-center mb-16">
-          <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-[64px] text-[#0F172A] leading-[1.08] tracking-tight mb-4">
+        {/* 🚀 Hero 區塊：Notion 標題風格 */}
+        <section className="text-center mb-16 space-y-4">
+          <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-[56px] text-[#37352F] leading-[1.15] tracking-tight">
             學測英文作文，不只批改，更教你怎麼拿高分。
           </h1>
-          <p className="text-[#475569] text-lg md:text-[20px] font-normal leading-relaxed max-w-[680px] mx-auto">
-            專為高中生與教練打造的極簡評量系統，精準診斷語法失誤並提供標竿範文。
+          <p className="text-[#787774] text-lg md:text-[19px] font-normal leading-relaxed max-w-[640px] mx-auto">
+            依據大考中心閱卷規準，提供分項評分、語法細節修訂與標竿範文。
           </p>
         </section>
 
-        {/* 💻 中央表單系統（同一垂直軸、單一卡片容器、圓角 20px） */}
-        <main className="space-y-14">
+        {/* 💻 中央表單系統 */}
+        <main className="space-y-12">
 
-          {/* 模式選擇 (Select / Segment) */}
-          <div className="bg-white p-2 rounded-[20px] minimal-shadow grid grid-cols-2 gap-2">
+          {/* 模式選擇 (Notion Segment Switch) */}
+          <div className="bg-[#F1F0EC] p-1 rounded-xl border border-[#E9E8E4] grid grid-cols-2 gap-1">
             <button
               onClick={() => {
                 setMainMode('correction');
                 setGuidanceResult(null);
                 setCorrectionResult(null);
               }}
-              className={`h-[48px] rounded-[14px] text-sm font-semibold ui-transition ${
+              className={`h-[44px] rounded-lg text-xs font-semibold transition-all duration-150 ${
                 mainMode === 'correction'
-                  ? 'bg-[#0F172A] text-white'
-                  : 'text-[#475569] hover:text-[#0F172A]'
+                  ? 'bg-white text-[#37352F] shadow-2xs'
+                  : 'text-[#787774] hover:text-[#37352F]'
               }`}
             >
               作文評量 (Assessment)
@@ -174,26 +174,26 @@ export default function Home() {
                 setGuidanceResult(null);
                 setCorrectionResult(null);
               }}
-              className={`h-[48px] rounded-[14px] text-sm font-semibold ui-transition ${
+              className={`h-[44px] rounded-lg text-xs font-semibold transition-all duration-150 ${
                 mainMode === 'guidance'
-                  ? 'bg-[#0F172A] text-white'
-                  : 'text-[#475569] hover:text-[#0F172A]'
+                  ? 'bg-white text-[#37352F] shadow-2xs'
+                  : 'text-[#787774] hover:text-[#37352F]'
               }`}
             >
               寫作發想 (Guidance)
             </button>
           </div>
 
-          {/* 主要表單區塊 */}
-          <div className="bg-white p-8 md:p-10 rounded-[20px] minimal-shadow space-y-8">
+          {/* 主要卡片容器 */}
+          <div className="notion-card p-8 md:p-10 rounded-[20px] space-y-8">
 
             {/* 寫作發想子類型選擇 */}
             {mainMode === 'guidance' && (
               <div className="space-y-3">
-                <label className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider block text-left">
+                <label className="text-xs font-semibold text-[#787774] uppercase tracking-wider block text-left">
                   選擇題目類型
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                   {(Object.keys(GUIDANCE_CONFIG) as GuidanceType[]).map((key) => {
                     const isActive = guidanceType === key;
                     return (
@@ -203,10 +203,10 @@ export default function Home() {
                           setGuidanceType(key);
                           setTopic('');
                         }}
-                        className={`h-[52px] rounded-[16px] text-xs font-semibold ui-transition border ${
+                        className={`h-[48px] rounded-xl text-xs font-medium transition-all border ${
                           isActive
-                            ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                            : 'bg-white text-[#475569] border-slate-200 hover:border-slate-300'
+                            ? 'bg-[#37352F] text-white border-[#37352F]'
+                            : 'bg-white text-[#37352F] border-[#E9E8E4] hover:bg-[#F7F6F3]'
                         }`}
                       >
                         {GUIDANCE_CONFIG[key].label}
@@ -220,7 +220,7 @@ export default function Home() {
             {/* 目標級分設定 */}
             {mainMode === 'guidance' && (
               <div className="space-y-3">
-                <label className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider block text-left">
+                <label className="text-xs font-semibold text-[#787774] uppercase tracking-wider block text-left">
                   設定目標級分
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -230,14 +230,14 @@ export default function Home() {
                       <button
                         key={opt.id}
                         onClick={() => setTargetScore(opt.id)}
-                        className={`p-4 rounded-[16px] text-left ui-transition border ${
+                        className={`p-4 rounded-xl text-left transition-all border ${
                           isSelected
-                            ? 'bg-slate-50 border-[#0F172A] text-[#0F172A]'
-                            : 'bg-white border-slate-200 text-[#475569]'
+                            ? 'bg-[#E8F0FE] border-[#2383E2] text-[#1E40AF]'
+                            : 'bg-white border-[#E9E8E4] text-[#37352F] hover:bg-[#F7F6F3]'
                         }`}
                       >
-                        <div className="font-semibold text-xs text-[#0F172A]">{opt.label}</div>
-                        <div className="text-[11px] text-[#475569] mt-1">{opt.desc}</div>
+                        <div className="font-semibold text-xs">{opt.label}</div>
+                        <div className="text-[11px] opacity-80 mt-1">{opt.desc}</div>
                       </button>
                     );
                   })}
@@ -245,9 +245,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* 1. 上傳檔案 (52px 統一按鈕與佈局) */}
+            {/* 1. 上傳檔案 */}
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider block text-left">
+              <label className="text-xs font-semibold text-[#787774] uppercase tracking-wider block text-left">
                 1. 題目卷檔案 (PDF / JPG / PNG)
               </label>
               
@@ -255,17 +255,17 @@ export default function Home() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`p-8 rounded-[16px] border border-dashed text-center ui-transition ${
+                className={`p-8 rounded-2xl border border-dashed text-center transition-all ${
                   isDragging
-                    ? 'border-[#0F172A] bg-slate-50'
-                    : 'border-slate-200 bg-[#FBFBFA]'
+                    ? 'border-[#2383E2] bg-[#E8F0FE]/30'
+                    : 'border-[#E9E8E4] bg-[#FBFBFA]'
                 }`}
               >
                 <div className="flex flex-col items-center justify-center gap-3">
-                  <span className="text-xs text-[#475569]">
+                  <span className="text-xs text-[#787774]">
                     拖曳檔案至此區域，或點擊選擇檔案
                   </span>
-                  <label className="cursor-pointer h-[48px] px-6 bg-white hover:bg-slate-50 text-[#0F172A] border border-slate-200 rounded-[14px] text-xs font-semibold inline-flex items-center justify-center minimal-shadow ui-transition">
+                  <label className="cursor-pointer h-[44px] px-5 bg-white hover:bg-[#F7F6F3] text-[#37352F] border border-[#E9E8E4] rounded-lg text-xs font-medium inline-flex items-center justify-center transition-all shadow-2xs">
                     上傳題目檔案
                     <input
                       type="file"
@@ -277,7 +277,7 @@ export default function Home() {
                 </div>
 
                 {fileData && (
-                  <div className="mt-4 inline-flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-[12px] text-xs font-medium text-[#0F172A]">
+                  <div className="mt-4 inline-flex items-center gap-2 notion-bg-gray px-3.5 py-1.5 rounded-md text-xs font-medium">
                     <span>{fileData.name}</span>
                     <button
                       onClick={() => setFileData(null)}
@@ -292,7 +292,7 @@ export default function Home() {
 
             {/* 2. 題目引導與說明 */}
             <div className="space-y-3">
-              <label htmlFor="topic-input" className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider block text-left">
+              <label htmlFor="topic-input" className="text-xs font-semibold text-[#787774] uppercase tracking-wider block text-left">
                 2. 題目文字說明
               </label>
               <textarea
@@ -305,18 +305,18 @@ export default function Home() {
                     ? '已成功讀取試卷檔案，可在此補充額外細節需求...'
                     : GUIDANCE_CONFIG[guidanceType].placeholder
                 }
-                className="w-full bg-[#FBFBFA] border border-slate-200 rounded-[16px] p-4 text-[#0F172A] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#0F172A] text-xs leading-relaxed resize-none ui-transition"
+                className="w-full notion-input rounded-xl p-4 text-xs leading-relaxed resize-none transition-all"
               />
             </div>
 
-            {/* 3. 學生內文 (僅在評量模式顯示) */}
+            {/* 3. 學生內文 */}
             {mainMode === 'correction' && (
-              <div className="space-y-3 pt-4 border-t border-slate-100">
+              <div className="space-y-3 pt-4 border-t border-[#E9E8E4]">
                 <div className="flex justify-between items-center">
-                  <label htmlFor="essay-input" className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider text-left">
+                  <label htmlFor="essay-input" className="text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">
                     3. 學生英文作文全文
                   </label>
-                  <span className="text-[11px] text-[#475569]">{userEssay.length} 字</span>
+                  <span className="text-[11px] text-[#787774]">{userEssay.length} 字</span>
                 </div>
                 <textarea
                   id="essay-input"
@@ -324,48 +324,48 @@ export default function Home() {
                   value={userEssay}
                   onChange={(e) => setUserEssay(e.target.value)}
                   placeholder="請貼上學生英文作文內容..."
-                  className="w-full bg-[#FBFBFA] border border-slate-200 rounded-[16px] p-4 text-[#0F172A] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#0F172A] text-xs leading-relaxed font-mono resize-none ui-transition"
+                  className="w-full notion-input rounded-xl p-4 text-xs leading-relaxed font-mono resize-none transition-all"
                 />
               </div>
             )}
 
-            {/* CTA 按鈕：高度統一 52px、圓角 14px */}
+            {/* CTA 按鈕 */}
             <button
               onClick={handleGenerate}
               disabled={isButtonDisabled}
-              className="w-full h-[52px] bg-[#0F172A] hover:bg-black text-white font-semibold rounded-[14px] text-xs tracking-wider ui-transition minimal-shadow disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+              className="w-full h-[48px] bg-[#2383E2] hover:bg-[#1D6FCD] text-white font-medium rounded-xl text-xs tracking-wider transition-all disabled:bg-[#E9E8E4] disabled:text-[#A8A7A1] disabled:cursor-not-allowed"
             >
               {loading ? '系統分析中...' : mainMode === 'correction' ? '開始 CEEC 評量' : '開始寫作發想'}
             </button>
           </div>
 
-          {/* 📊 評量結果：發想模式 */}
+          {/* 📊 評量結果：發想模式 (Notion Callout Cards) */}
           {guidanceResult && !loading && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {guidanceResult.theme && (
-                <div className="p-8 bg-white rounded-[20px] minimal-shadow space-y-3">
-                  <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider border-b border-slate-100 pb-3 text-left">
+                <div className="p-6 bg-white border border-[#E9E8E4] rounded-[16px] space-y-2.5">
+                  <div className="inline-block px-2.5 py-0.5 notion-bg-blue rounded-md text-[11px] font-semibold">
                     審題要旨與寫作方向
-                  </h3>
-                  <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: guidanceResult.theme }} />
+                  </div>
+                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.theme }} />
                 </div>
               )}
 
               {guidanceResult.outline && (
-                <div className="p-8 bg-white rounded-[20px] minimal-shadow space-y-3">
-                  <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider border-b border-slate-100 pb-3 text-left">
+                <div className="p-6 bg-white border border-[#E9E8E4] rounded-[16px] space-y-2.5">
+                  <div className="inline-block px-2.5 py-0.5 notion-bg-yellow rounded-md text-[11px] font-semibold">
                     段落結構發展建議
-                  </h3>
-                  <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: guidanceResult.outline }} />
+                  </div>
+                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.outline }} />
                 </div>
               )}
 
               {guidanceResult.vocab && (
-                <div className="p-8 bg-white rounded-[20px] minimal-shadow space-y-3">
-                  <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider border-b border-slate-100 pb-3 text-left">
+                <div className="p-6 bg-white border border-[#E9E8E4] rounded-[16px] space-y-2.5">
+                  <div className="inline-block px-2.5 py-0.5 notion-bg-green rounded-md text-[11px] font-semibold">
                     進階詞彙與道地句型
-                  </h3>
-                  <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: guidanceResult.vocab }} />
+                  </div>
+                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.vocab }} />
                 </div>
               )}
             </div>
@@ -373,62 +373,62 @@ export default function Home() {
 
           {/* 📊 評量結果：診斷模式 */}
           {correctionResult && !loading && (
-            <div className="space-y-6">
-              <div className="p-8 md:p-10 bg-white rounded-[20px] minimal-shadow space-y-4">
-                <div className="flex justify-between items-end border-b border-slate-100 pb-4">
+            <div className="space-y-4">
+              <div className="p-8 bg-white border border-[#E9E8E4] rounded-[20px] space-y-4">
+                <div className="flex justify-between items-end border-b border-[#E9E8E4] pb-4">
                   <div className="text-left">
-                    <span className="text-[11px] font-semibold text-[#475569] uppercase tracking-wider block">
+                    <span className="text-[11px] font-semibold text-[#787774] uppercase tracking-wider block">
                       CEEC 模擬預估得分
                     </span>
-                    <span className="font-heading text-4xl font-bold text-[#0F172A] mt-1 block">
+                    <span className="font-heading text-4xl font-bold text-[#2383E2] mt-1 block">
                       {correctionResult.score}
                     </span>
                   </div>
-                  <span className="text-xs text-[#475569]">滿分 20.0</span>
+                  <span className="text-xs text-[#787774]">滿分 20.0</span>
                 </div>
-                <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.summary }} />
+                <div className="text-xs leading-relaxed text-[#37352F] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.summary }} />
               </div>
 
               {correctionResult.errors && (
-                <div className="p-8 bg-white rounded-[20px] minimal-shadow space-y-3">
-                  <h3 className="text-xs font-semibold text-rose-600 uppercase tracking-wider border-b border-slate-100 pb-3 text-left">
-                    逐句語法診斷與修正建議
-                  </h3>
-                  <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.errors }} />
+                <div className="p-6 bg-white border border-[#E9E8E4] rounded-[16px] space-y-2.5">
+                  <div className="inline-block px-2.5 py-0.5 notion-bg-red rounded-md text-[11px] font-semibold">
+                    逐句語法診斷與修正對照
+                  </div>
+                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.errors }} />
                 </div>
               )}
 
               {correctionResult.modelEssay && (
-                <div className="p-8 bg-white rounded-[20px] minimal-shadow space-y-3">
-                  <h3 className="text-xs font-semibold text-[#0F172A] uppercase tracking-wider border-b border-slate-100 pb-3 text-left">
+                <div className="p-6 bg-white border border-[#E9E8E4] rounded-[16px] space-y-2.5">
+                  <div className="inline-block px-2.5 py-0.5 notion-bg-green rounded-md text-[11px] font-semibold">
                     高分標竿範文 (16–18 分級別)
-                  </h3>
-                  <div className="text-xs leading-relaxed text-[#0F172A] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.modelEssay }} />
+                  </div>
+                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.modelEssay }} />
                 </div>
               )}
             </div>
           )}
 
-          {/* 📚 CEEC 評分維度說明（單一對齊軸卡片） */}
-          <section className="bg-white p-8 md:p-10 rounded-[20px] minimal-shadow space-y-6">
-            <h2 className="text-sm font-semibold text-[#0F172A] border-b border-slate-100 pb-4 text-left">
+          {/* 📚 CEEC 評分維度說明 */}
+          <section className="bg-white p-8 rounded-[20px] border border-[#E9E8E4] space-y-5">
+            <h2 className="text-sm font-semibold text-[#37352F] border-b border-[#E9E8E4] pb-3 text-left">
               CEEC 大考中心英文作文評分規準
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#475569] text-left">
-              <div className="p-5 bg-[#FBFBFA] rounded-[16px]">
-                <span className="font-semibold text-[#0F172A] block mb-1">1. 內容 (Content) — 5 分</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#787774] text-left">
+              <div className="p-4 notion-bg-gray rounded-xl">
+                <span className="font-semibold text-[#37352F] block mb-1">1. 內容 (Content) — 5 分</span>
                 切題度、細節發展完整性與論據邏輯。
               </div>
-              <div className="p-5 bg-[#FBFBFA] rounded-[16px]">
-                <span className="font-semibold text-[#0F172A] block mb-1">2. 組織 (Organization) — 5 分</span>
+              <div className="p-4 notion-bg-gray rounded-xl">
+                <span className="font-semibold text-[#37352F] block mb-1">2. 組織 (Organization) — 5 分</span>
                 結構連貫性、段落銜接與轉折詞運用。
               </div>
-              <div className="p-5 bg-[#FBFBFA] rounded-[16px]">
-                <span className="font-semibold text-[#0F172A] block mb-1">3. 文法句構 (Grammar & Structures) — 5 分</span>
+              <div className="p-4 notion-bg-gray rounded-xl">
+                <span className="font-semibold text-[#37352F] block mb-1">3. 文法句構 (Grammar & Structures) — 5 分</span>
                 句型多樣性、時態一致性與語法精準度。
               </div>
-              <div className="p-5 bg-[#FBFBFA] rounded-[16px]">
-                <span className="font-semibold text-[#0F172A] block mb-1">4. 字彙拼字 (Vocabulary & Spelling) — 5 分</span>
+              <div className="p-4 notion-bg-gray rounded-xl">
+                <span className="font-semibold text-[#37352F] block mb-1">4. 字彙拼字 (Vocabulary & Spelling) — 5 分</span>
                 CEFR B1-B2 詞彙廣度、搭配詞與拼字正確性。
               </div>
             </div>
@@ -437,9 +437,9 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className="mt-20 text-center text-xs text-[#475569]">
-          <p className="font-semibold text-[#0F172A]">CEEC Essay Assessment Standard</p>
-          <p className="text-[11px] mt-1 text-slate-400">本系統參照大學入學考試中心基金會非選擇題閱卷規準設計。</p>
+        <footer className="mt-20 text-center text-xs text-[#787774]">
+          <p className="font-medium text-[#37352F]">CEEC Essay Assessment Standard</p>
+          <p className="text-[11px] mt-1 opacity-70">本系統參照大學入學考試中心基金會非選擇題閱卷規準設計。</p>
         </footer>
 
       </div>
