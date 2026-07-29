@@ -1,17 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --font-noto: 'Noto Sans TC', -apple-system, sans-serif;
   --font-space: 'Space Grotesk', var(--font-noto);
+  --ink: #202828;
+  --paper: #fbfaf7;
+  --line: #e8e5dd;
 }
 
 body {
-  background-color: #F7F6F3;
-  color: #37352F;
+  background-color: var(--paper);
+  color: var(--ink);
   font-family: var(--font-noto);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea {
+  font: inherit;
+}
+
+.app-shell {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(213, 235, 227, 0.75), transparent 27rem),
+    radial-gradient(circle at 93% 11%, rgba(226, 235, 255, 0.7), transparent 24rem),
+    #f8f7f3;
 }
 
 .font-heading {
@@ -19,9 +32,10 @@ body {
 }
 
 .notion-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E9E8E4;
-  box-shadow: 0 1px 3px rgba(15, 15, 15, 0.03), 0 0 0 1px rgba(15, 15, 15, 0.01);
+  background-color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(232, 229, 221, 0.95);
+  box-shadow: 0 20px 50px rgba(47, 57, 53, 0.08), 0 2px 5px rgba(47, 57, 53, 0.04);
+  backdrop-filter: blur(12px);
 }
 
 .notion-card-hover {
@@ -41,8 +55,8 @@ body {
 .notion-bg-red { background-color: #FFE2DD; color: #C4554D; }
 
 .notion-input {
-  background-color: #F7F6F3;
-  border: 1px solid #E9E8E4;
+  background-color: #faf9f6;
+  border: 1px solid var(--line);
   color: #37352F;
 }
 
@@ -51,4 +65,46 @@ body {
   border-color: #2383E2;
   box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.15);
   outline: none;
+}
+
+.result-content h4 {
+  margin: 0.25rem 0 0.75rem;
+  color: #263933;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.result-content p + p {
+  margin-top: 0.75rem;
+}
+
+.result-content ul,
+.result-content ol {
+  margin: 0.7rem 0;
+  padding-left: 1.35rem;
+}
+
+.result-content li + li {
+  margin-top: 0.35rem;
+}
+
+.result-content table {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #dfe5e1;
+  border-radius: 0.75rem;
+}
+
+.result-content th,
+.result-content td {
+  padding: 0.6rem;
+  border: 1px solid #dfe5e1;
+  vertical-align: top;
+}
+
+@media (max-width: 640px) {
+  .result-content table {
+    display: block;
+    overflow-x: auto;
+  }
 }

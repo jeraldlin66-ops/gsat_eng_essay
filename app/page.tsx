@@ -126,34 +126,39 @@ export default function Home() {
     (mainMode === 'correction' && !userEssay.trim());
 
   return (
-    <div className="min-h-screen bg-[#F7F6F3] text-[#37352F] selection:bg-[#E8F0FE] selection:text-[#1E40AF]">
+    <div className="app-shell min-h-screen text-[#37352F] selection:bg-[#D9EFE5] selection:text-[#214438]">
       
       {/* 🏛️ 置中主容器 (Strict Max-Width 960px) */}
-      <div className="max-w-[960px] mx-auto px-6 py-16 md:py-24">
+      <div className="max-w-[1040px] mx-auto px-5 py-10 sm:px-6 md:py-20">
 
         {/* 頂部 Notion Style Pill */}
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-[#E9E8E4] rounded-md text-xs font-medium text-[#787774] shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#2383E2]"></span>
+        <div className="flex justify-center mb-9">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/80 border border-white rounded-full text-[11px] font-semibold tracking-wide text-[#547067] shadow-sm backdrop-blur">
+            <span className="w-2 h-2 rounded-full bg-[#3F8A70] shadow-[0_0_0_4px_rgba(63,138,112,0.12)]"></span>
             <span>CEEC Writing Assessment Standard</span>
           </div>
         </div>
 
         {/* 🚀 Hero 區塊：Notion 標題風格 */}
-        <section className="text-center mb-16 space-y-4">
-          <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-[56px] text-[#37352F] leading-[1.15] tracking-tight">
+        <section className="text-center mb-12 space-y-5">
+          <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-[58px] text-[#26332f] leading-[1.12] tracking-[-0.045em]">
             學測英文作文，不只批改，更教你怎麼拿高分。
           </h1>
-          <p className="text-[#787774] text-lg md:text-[19px] font-normal leading-relaxed max-w-[640px] mx-auto">
+          <p className="text-[#68736f] text-base md:text-lg font-normal leading-relaxed max-w-[620px] mx-auto">
             依據大考中心閱卷規準，提供分項評分、語法細節修訂與標竿範文。
           </p>
+          <div className="flex flex-wrap justify-center gap-2.5 pt-2 text-xs text-[#5b6d66]">
+            <span className="rounded-full border border-[#d8e6df] bg-white/65 px-3 py-1.5">四向度評分</span>
+            <span className="rounded-full border border-[#d8e6df] bg-white/65 px-3 py-1.5">逐句修訂</span>
+            <span className="rounded-full border border-[#d8e6df] bg-white/65 px-3 py-1.5">高分範文</span>
+          </div>
         </section>
 
         {/* 💻 中央表單系統 */}
         <main className="space-y-12">
 
           {/* 模式選擇 (Notion Segment Switch) */}
-          <div className="bg-[#F1F0EC] p-1 rounded-xl border border-[#E9E8E4] grid grid-cols-2 gap-1">
+          <div className="bg-white/60 p-1.5 rounded-2xl border border-white grid grid-cols-2 gap-1.5 shadow-[0_8px_24px_rgba(60,72,66,0.05)] backdrop-blur-sm">
             <button
               onClick={() => {
                 setMainMode('correction');
@@ -347,7 +352,7 @@ export default function Home() {
                   <div className="inline-block px-2.5 py-0.5 notion-bg-blue rounded-md text-[11px] font-semibold">
                     審題要旨與寫作方向
                   </div>
-                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.theme }} />
+                  <div className="result-content text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.theme }} />
                 </div>
               )}
 
@@ -356,7 +361,7 @@ export default function Home() {
                   <div className="inline-block px-2.5 py-0.5 notion-bg-yellow rounded-md text-[11px] font-semibold">
                     段落結構發展建議
                   </div>
-                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.outline }} />
+                  <div className="result-content text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.outline }} />
                 </div>
               )}
 
@@ -365,7 +370,7 @@ export default function Home() {
                   <div className="inline-block px-2.5 py-0.5 notion-bg-green rounded-md text-[11px] font-semibold">
                     進階詞彙與道地句型
                   </div>
-                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.vocab }} />
+                  <div className="result-content text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: guidanceResult.vocab }} />
                 </div>
               )}
             </div>
@@ -386,7 +391,7 @@ export default function Home() {
                   </div>
                   <span className="text-xs text-[#787774]">滿分 20.0</span>
                 </div>
-                <div className="text-xs leading-relaxed text-[#37352F] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.summary }} />
+                <div className="result-content text-xs leading-relaxed text-[#37352F] text-left" dangerouslySetInnerHTML={{ __html: correctionResult.summary }} />
               </div>
 
               {correctionResult.errors && (
@@ -394,7 +399,7 @@ export default function Home() {
                   <div className="inline-block px-2.5 py-0.5 notion-bg-red rounded-md text-[11px] font-semibold">
                     逐句語法診斷與修正對照
                   </div>
-                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.errors }} />
+                  <div className="result-content text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.errors }} />
                 </div>
               )}
 
@@ -403,7 +408,7 @@ export default function Home() {
                   <div className="inline-block px-2.5 py-0.5 notion-bg-green rounded-md text-[11px] font-semibold">
                     高分標竿範文 (16–18 分級別)
                   </div>
-                  <div className="text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.modelEssay }} />
+                  <div className="result-content text-xs leading-relaxed text-[#37352F] text-left pt-1" dangerouslySetInnerHTML={{ __html: correctionResult.modelEssay }} />
                 </div>
               )}
             </div>
